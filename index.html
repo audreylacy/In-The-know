@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>In The Know</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+		<div class="auth-card">
+			<div class="auth-brand"><span class="auth-mark">ITK</span> In The Know</div>
+			<h1 id="authTitle">Welcome back.</h1>
+			<p class="auth-copy" id="authCopy">Sign in to see classroom updates, dates, and the notes that matter to you.</p>
+			<button class="google-button" id="googleButton" type="button"><span class="google-g">G</span> Continue with Google</button>
+			<div class="auth-fields">
+				<label>Email address<input id="authEmail" type="email" placeholder="you@school.edu" autocomplete="email"></label>
+				<label>Password<input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password"></label>
+			</div>
+			<button class="sign-in-button" id="signInButton" type="button">Sign in</button>
+			<button class="create-account-button" id="createAccountButton" type="button">Create account</button>
+			<button class="forgot-button" id="forgotPasswordButton" type="button">Forgot password?</button>
+			<nav class="auth-switch" aria-label="Account access"><a href="#signin" id="signInPageLink">Already have an account? Sign in</a><a href="#create-account" id="createAccountPageLink">New here? Create an account</a></nav>
+			<div class="role-picker">
+				<p>Choose your account</p>
+				<div class="role-options">
+					<button class="role-option" type="button" data-role="student"><strong>I'm a student</strong><span>See teacher notifications, class dates, and personal notes.</span></button>
+					<button class="role-option" type="button" data-role="teacher"><strong>I'm a teacher</strong><span>Manage class groups and send updates to students.</span></button>
+				</div>
+			</div>
+			<p class="auth-status" id="authStatus" role="status"></p>
+		</div>
+	</section>
+	<section class="auth-success-screen" id="authSuccessScreen" hidden>
+		<div class="auth-success-card">
+			<div class="success-badge" aria-hidden="true">✓</div>
+			<h2>Account ready</h2>
+			<p>Your account is set up and you’re ready to head to your homepage.</p>
+			<button class="sign-in-button success-button" id="continueToHomepage" type="button">Go to homepage</button>
+		</div>
+	</section>
+	<section class="auth-profile-screen" id="profileSetupScreen" hidden>
+		<div class="auth-profile-card">
+			<div class="auth-brand"><span class="auth-mark">ITK</span> In The Know</div>
+			<h2 id="profileTitle">Set up your profile</h2>
+			<p class="auth-profile-copy" id="profileCopy">Add your name and, if you’re a teacher, connect your school so students can join from the webpage.</p>
+			<form id="profileSetupForm">
+				<label class="profile-field">Full name<input id="profileNameInput" type="text" placeholder="Jordan Smith" autocomplete="name"></label>
+				<div class="teacher-profile-field" id="teacherProfileField" hidden>
+					<label class="profile-field">School name<input id="schoolNameInput" type="text" placeholder="Northside High School" autocomplete="organization"></label>
+					<label class="profile-field">School code<input id="schoolCodeInput" type="text" maxlength="10" placeholder="NHS-204"></label>
+					<p class="school-help">Students can use this code to join your classes and connect to Chromebooks from the website.</p>
+				</div>
+				<div class="profile-actions"><button class="sign-in-button profile-submit" id="profileSubmitButton" type="submit">Continue</button><button class="profile-cancel" id="profileCancelButton" type="button" hidden>Cancel</button></div>
+				<p class="auth-status" id="profileStatus" role="status"></p>
+			</form>
+		</div>
+	</section>
+	<section class="notification-guide-screen" id="notificationGuideScreen" hidden>
+		<div class="notification-guide-card">
+			<div class="auth-brand"><span class="auth-mark">ITK</span> In The Know</div>
+			<button class="guide-back" id="closeNotificationGuide" type="button">&larr; Back to dashboard</button>
+			<p class="eyebrow">Notification help</p>
+			<h2>Stay in the know</h2>
+			<p class="auth-profile-copy">Turn on browser alerts so important class messages and deadline reminders can appear on your Chromebook screen.</p>
+			<div class="notification-guide-grid">
+				<section class="notification-guide-section" aria-labelledby="studentNotificationsTitle"><span class="guide-number">01</span><h3 id="studentNotificationsTitle">For students</h3><ol><li>Join your class with the code from your teacher.</li><li>Click <strong>Enable alerts</strong> at the top of your dashboard.</li><li>Choose <strong>Allow</strong> when Chrome asks for permission.</li><li>Use <strong>Enable deadline reminders</strong> below your calendar for due-date alerts.</li></ol></section>
+				<section class="notification-guide-section" aria-labelledby="teacherNotificationsTitle"><span class="guide-number">02</span><h3 id="teacherNotificationsTitle">For teachers</h3><ol><li>Open your teacher workspace and select a class group.</li><li>Write a notification and click <strong>Send notification</strong>.</li><li>Students who joined that class receive the message on their Chromebooks.</li><li>Ask students to allow browser alerts so they can see messages away from the dashboard.</li></ol></section>
+			</div>
+			<div class="notification-guide-actions"><button class="sign-in-button" id="guideEnableNotifications" type="button">Enable notifications</button><p class="auth-status" id="guideNotificationStatus" role="status"></p></div>
+			<p class="guide-note"><strong>Chrome setting:</strong> If alerts were blocked, open Chrome Settings &rarr; Privacy and security &rarr; Site settings &rarr; Notifications, then allow this site.</p>
+		</div>
+	</section>
+	<div id="appShell" hidden>
+	<header class="topbar">
+		<div class="brand"><span class="brand-mark" aria-label="ITK logo"><span class="logo-t">T</span><span class="logo-i">I</span><span class="logo-k">K</span></span> In The Know</div>
+		<div class="student">
+			<button class="teacher-action" id="joinClassButton" type="button" hidden>+ Join class</button>
+			<button class="teacher-action" id="enableNotificationsButton" type="button" hidden>Enable alerts</button>
+			<button class="profile-button" id="profileButton" type="button" aria-expanded="false" aria-controls="themeMenu"><span>Signed in as Maya</span><span class="avatar">M</span></button>
+			<div class="theme-menu" id="themeMenu" hidden>
+				<p>Choose a theme</p>
+				<button class="theme-choice" type="button" data-theme-choice="default"><span class="swatch"></span> Original</button>
+				<button class="theme-choice" type="button" data-theme-choice="pink-drink"><span class="swatch swatch-pink"></span> Pink Drink</button>
+				<button class="theme-choice" type="button" data-theme-choice="gridiron"><span class="swatch swatch-gridiron"></span> Gridiron</button>
+				<button class="theme-choice" type="button" data-theme-choice="galaxy"><span class="swatch swatch-galaxy"></span> Galaxy</button>
+				<button class="theme-choice" type="button" data-theme-choice="ocean"><span class="swatch swatch-ocean"></span> Ocean</button>
+				<button class="theme-choice" type="button" data-theme-choice="candy"><span class="swatch swatch-candy"></span> Candy</button>
+				<button class="theme-choice" type="button" data-theme-choice="forest"><span class="swatch swatch-forest"></span> Forest</button>
+				<button class="theme-choice" type="button" data-theme-choice="ravens"><span class="swatch swatch-ravens"></span> Ravens</button>
+				<button class="theme-choice" id="editProfileButton" type="button">Edit profile</button>
+				<button class="theme-choice" id="notificationHelpButton" type="button">How to turn on notifications</button>
+				<button class="theme-choice" id="switchRoleButton" type="button">Switch role</button>
+			</div>
+		</div>
+	</header>
+
+	<section class="teacher-main" id="teacherView" hidden>
+		<div class="teacher-hero"><div><p class="eyebrow">Teacher workspace</p><h1>Good morning, Jordan.</h1><p>Keep your classes in the know.</p></div></div>
+		<div class="teacher-grid">
+			<section class="teacher-panel" aria-labelledby="groupsTitle"><h2 id="groupsTitle">Your class groups</h2><div class="group-select" id="groupSelect"></div><div class="create-class"><input id="newClassName" type="text" placeholder="Class name"><input id="newClassCode" type="text" maxlength="8" placeholder="Class code"><button class="teacher-action" id="createClassButton" type="button">Create class</button><p class="create-class-status" id="createClassStatus" role="status"></p></div><h2 class="teacher-roster-title" id="rosterTitle">Joined students</h2><div class="roster" id="roster"></div></section>
+			<section class="teacher-panel" aria-labelledby="activityTitle"><h2 id="activityTitle">Recent activity</h2><div class="teacher-feed"><div class="feed-row"><strong>Science lab moved</strong><span>Sent to Biology · Period 2 · Today</span></div><div class="feed-row"><strong>Field trip reminder</strong><span>Sent to all class groups · Yesterday</span></div><div class="feed-row"><strong>Essay feedback is ready</strong><span>Sent to Advisory · Monday</span></div></div></section>
+		</div>
+		<section class="teacher-panel teacher-composer-panel" aria-labelledby="composerTitle"><h2 id="composerTitle">Send to selected class</h2><div class="composer"><input id="teacherNotificationTitle" type="text" placeholder="Notification title"><textarea id="teacherNotificationMessage" placeholder="Write a message that will appear on students' Chromebooks..."></textarea><button class="teacher-action" id="sendTeacherNotification" type="button">Send notification</button><p class="composer-status" id="composerStatus" role="status"></p></div></section>
+	</section>
+
+	<main id="studentView">
+		<section class="welcome">
+			<p class="eyebrow">Student dashboard</p>
+			<h1>Good morning, Maya.</h1>
+			<p class="subtitle">Here is what your teachers want you to know today.</p>
+		</section>
+
+		<section aria-labelledby="notifications-title">
+			<div class="section-heading"><h2 id="notifications-title">Teacher notifications</h2><span class="count">3 unread updates</span></div>
+			<div class="live-notifications" id="liveNotifications"></div>
+			<div class="notifications">
+				<article class="notification urgent"><div class="notice-meta"><span class="teacher">Ms. Chen</span><span>Today, 8:42 AM</span></div><h3>Science lab moved</h3><p>We will meet in Lab 2 today. Bring your completed pre-lab worksheet.</p></article>
+				<article class="notification"><div class="notice-meta"><span class="teacher">Mr. Rivera</span><span>Today, 7:15 AM</span></div><h3>Essay feedback is ready</h3><p>Your draft comments are available in the English classroom folder.</p></article>
+				<article class="notification reminder"><div class="notice-meta"><span class="teacher">Ms. Patel</span><span>Yesterday</span></div><h3>Field trip reminder</h3><p>Permission slips are due Friday. Please check the calendar for the departure time.</p></article>
+			</div>
+		</section>
+
+		<section aria-labelledby="calendar-title">
+			<div class="section-heading"><h2 id="calendar-title">Class calendar</h2><span class="count">Updated just now</span></div>
+			<button class="calendar-button" id="calendarButton" type="button" aria-haspopup="dialog" aria-controls="calendarDialog">
+				<span class="calendar-preview">
+					<span class="calendar-intro"><span class="month" id="previewMonth"></span><span><strong class="calendar-day" id="calendarDay"></strong></span><h3>What's coming up</h3><span class="open-label">Open full calendar &rarr;</span></span>
+					<span class="mini-calendar" aria-hidden="true"><span class="week"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></span><span class="dates" id="miniDates"></span></span>
+				</span>
+			</button>
+			<div class="student-notes" aria-labelledby="student-notes-title">
+				<h3 id="student-notes-title">My notes</h3>
+				<label class="note-field">Date<input id="pageNoteDate" type="date"></label>
+				<label class="note-field">Note<textarea id="pageNoteInput" placeholder="Write a reminder for yourself..."></textarea></label>
+				<button class="save-note" id="savePageNote" type="button">Save note</button>
+				<button class="save-note" id="enableReminderButton" type="button">Enable deadline reminders</button>
+				<p class="note-status" id="pageNoteStatus" role="status">Your notes are private to you.</p>
+			</div>
+		</section>
+	</main>
+	</div>
+
+	<dialog id="calendarDialog" aria-labelledby="dialogTitle">
+		<div class="dialog-header"><h2 id="dialogTitle"></h2><button class="close" id="closeDialog" type="button" aria-label="Close calendar">&times;</button></div>
+		<div class="full-calendar"><div class="week"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="dates" id="fullDates"></div><div class="selected-note" id="selectedNote"></div><div class="dialog-note-editor"><textarea id="dialogNoteInput" placeholder="Add your note for this date..."></textarea><button class="save-note" id="saveDialogNote" type="button">Save date note</button><p class="note-status" id="dialogNoteStatus" role="status"></p></div></div>
+	</dialog>
+	<dialog class="join-dialog" id="joinDialog" aria-labelledby="joinTitle"><h2 id="joinTitle">Join a class</h2><p>Ask your teacher for the class code, then enter it below.</p><label>Class code<input id="classCodeInput" maxlength="8" placeholder="BIO-204"></label><div class="join-actions"><button class="join-cancel" id="closeJoinDialog" type="button">Cancel</button><button class="join-submit" id="submitJoin" type="button">Join class</button></div><p class="auth-status" id="joinStatus" role="status"></p></dialog>
+
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script>
+		const supabaseClient = window.supabase.createClient('https://dfjypnfgnjponkqgojko.supabase.co', 'sb_publishable_KjDKSRex4JiweATzLeE9mQ_0H8NqlKN');
+		const authScreen = document.querySelector('#authScreen');
+		const authSuccessScreen = document.querySelector('#authSuccessScreen');
+		const profileSetupScreen = document.querySelector('#profileSetupScreen');
+		const notificationGuideScreen = document.querySelector('#notificationGuideScreen');
+		const guideNotificationStatus = document.querySelector('#guideNotificationStatus');
+		const appShell = document.querySelector('#appShell');
+		const studentView = document.querySelector('#studentView');
+		const teacherView = document.querySelector('#teacherView');
+		const authStatus = document.querySelector('#authStatus');
+		const authTitle = document.querySelector('#authTitle');
+		const authCopy = document.querySelector('#authCopy');
+		const signInPageLink = document.querySelector('#signInPageLink');
+		const createAccountPageLink = document.querySelector('#createAccountPageLink');
+		const continueToHomepage = document.querySelector('#continueToHomepage');
+		const profileSetupForm = document.querySelector('#profileSetupForm');
+		const profileNameInput = document.querySelector('#profileNameInput');
+		const schoolNameInput = document.querySelector('#schoolNameInput');
+		const schoolCodeInput = document.querySelector('#schoolCodeInput');
+		const teacherProfileField = document.querySelector('#teacherProfileField');
+		const profileStatus = document.querySelector('#profileStatus');
+		const profileTitle = document.querySelector('#profileTitle');
+		const profileCopy = document.querySelector('#profileCopy');
+		const profileSubmitButton = document.querySelector('#profileSubmitButton');
+		const profileCancelButton = document.querySelector('#profileCancelButton');
+		const authEmail = document.querySelector('#authEmail');
+		const authPassword = document.querySelector('#authPassword');
+		let selectedRole = null;
+		let profileEditing = false;
+		let currentUser = null;
+		let currentProfile = null;
+		const loadCurrentProfile = async () => {
+			if (!currentUser) return null;
+			const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+			if (error) throw error;
+			currentProfile = data;
+			return data;
+		};
+		const saveProfileSetup = async (name, schoolName, schoolCode) => {
+			if (!currentUser) throw new Error('Your session has expired. Please sign in again.');
+			const profile = { id: currentUser.id, role: selectedRole || 'student', full_name: name, school_name: schoolName || '', school_code: schoolCode || '' };
+			const { data, error } = await supabaseClient.from('profiles').upsert(profile, { onConflict: 'id' }).select().single();
+			if (error) throw error;
+			currentProfile = data;
+			if (selectedRole === 'teacher' && schoolName && schoolCode) {
+				const { error: schoolError } = await supabaseClient.from('schools').upsert({ name: schoolName, code: schoolCode, owner_id: currentUser.id }, { onConflict: 'code' });
+				if (schoolError) throw schoolError;
+			}
+		};
+		const profileButton = document.querySelector('#profileButton');
+		const profileLabel = profileButton.querySelector('span');
+		const joinClassButton = document.querySelector('#joinClassButton');
+		const enableNotificationsButton = document.querySelector('#enableNotificationsButton');
+		const joinDialog = document.querySelector('#joinDialog');
+		const classCodeInput = document.querySelector('#classCodeInput');
+		const joinStatus = document.querySelector('#joinStatus');
+		let classCodes = { 'BIO-204': 'Biology · Period 2', 'ADV-118': 'Advisory · Room 18', 'ENV-731': 'Environmental Science' };
+		let classRosters = { 'BIO-204': ['Maya Chen', 'Alex Johnson', 'Priya Shah', 'Noah Williams'], 'ADV-118': ['Maya Chen', 'Eli Brooks', 'Sofia Nguyen'], 'ENV-731': ['Maya Chen', 'Jordan Lee', 'Avery Smith', 'Luis Garcia'] };
+		const classRecords = {};
+		const savedClasses = JSON.parse(localStorage.getItem('in-the-know-classes') || '{}');
+		Object.entries(savedClasses).forEach(([code, classInfo]) => { classCodes[code] = classInfo.name; classRosters[code] = classInfo.students || []; });
+		const saveClasses = () => {
+			const classes = {};
+			Object.keys(classCodes).forEach((code) => { classes[code] = { name: classCodes[code], students: classRosters[code] || [] }; });
+			localStorage.setItem('in-the-know-classes', JSON.stringify(classes));
+		};
+		const loadBackendClasses = async () => {
+			if (!currentUser) return;
+			const { data, error } = await supabaseClient.from('classes').select('id, name, code, school_id').order('created_at');
+			if (error) throw error;
+			data.forEach((classRecord) => {
+				classRecords[classRecord.code] = classRecord;
+				classCodes[classRecord.code] = classRecord.name;
+				classRosters[classRecord.code] = classRosters[classRecord.code] || [];
+			});
+			if (typeof renderGroups === 'function' && currentProfile?.role === 'teacher') renderGroups();
+		};
+		const loadBackendNotifications = async () => {
+			if (!currentUser || currentProfile?.role !== 'student') return;
+			const { data, error } = await supabaseClient.from('notifications').select('id, title, message, created_at, class_id, classes(name, code)').order('created_at', { ascending: false });
+			if (error) throw error;
+			const notifications = getLiveNotifications();
+			data.forEach((item) => {
+				if (!notifications.some((saved) => saved.id === item.id)) notifications.push({ id: item.id, title: item.title, message: item.message, classCode: item.classes?.code, className: item.classes?.name, teacher: 'Your teacher', createdAt: item.created_at });
+			});
+			localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
+			renderLiveNotifications();
+		};
+		let selectedClassCode = 'BIO-204';
+		const showAuthSuccess = (role) => {
+			authScreen.hidden = true;
+			authSuccessScreen.hidden = false;
+			profileSetupScreen.hidden = true;
+			notificationGuideScreen.hidden = true;
+			appShell.hidden = true;
+			selectedRole = role;
+			localStorage.setItem('in-the-know-role', role);
+			setTimeout(() => {
+				showAppForRole(role);
+			}, 1800);
+		};
+		const showProfileSetup = (role, editing = false) => {
+			authScreen.hidden = true;
+			authSuccessScreen.hidden = true;
+			profileSetupScreen.hidden = false;
+			appShell.hidden = true;
+			selectedRole = role;
+			profileEditing = editing;
+			teacherProfileField.hidden = role !== 'teacher';
+			const savedProfile = currentProfile || {};
+			profileTitle.textContent = editing ? 'Your profile' : 'Set up your profile';
+			profileCopy.textContent = editing ? 'Update your name or school details. These details personalize your dashboard and class connections.' : 'Add your name and, if you’re a teacher, connect your school so students can join from the webpage.';
+			profileSubmitButton.textContent = editing ? 'Save changes' : 'Continue';
+			profileCancelButton.hidden = !editing;
+			profileNameInput.value = editing ? (savedProfile.full_name || '') : '';
+			schoolNameInput.value = editing ? (savedProfile.school_name || '') : '';
+			schoolCodeInput.value = editing ? (savedProfile.school_code || '') : '';
+			profileStatus.textContent = '';
+		};
+		const showAppForRole = async (role) => {
+			const isTeacher = role === 'teacher';
+			const savedProfile = currentProfile || {};
+			const displayName = savedProfile.full_name || (isTeacher ? 'Jordan' : 'Maya');
+			authScreen.hidden = true;
+			authSuccessScreen.hidden = true;
+			profileSetupScreen.hidden = true;
+			notificationGuideScreen.hidden = true;
+			appShell.hidden = false;
+			studentView.hidden = isTeacher;
+			teacherView.hidden = !isTeacher;
+			joinClassButton.hidden = isTeacher;
+			enableNotificationsButton.hidden = isTeacher;
+			if (!isTeacher && 'Notification' in window && Notification.permission === 'granted') enableNotificationsButton.textContent = 'Alerts enabled';
+			if (!isTeacher) subscribeToJoinedClasses();
+			try { await loadBackendClasses(); await loadBackendNotifications(); } catch (error) { authStatus.textContent = error.message; }
+			document.querySelector('#studentView h1').textContent = `Good morning, ${displayName}.`;
+			document.querySelector('.teacher-hero h1').textContent = `Good morning, ${displayName}.`;
+			profileLabel.textContent = `Signed in as ${displayName}`;
+			profileButton.querySelector('.avatar').textContent = displayName.charAt(0).toUpperCase();
+		};
+		const showNotificationGuide = () => {
+			appShell.hidden = true;
+			authScreen.hidden = true;
+			authSuccessScreen.hidden = true;
+			profileSetupScreen.hidden = true;
+			notificationGuideScreen.hidden = false;
+			if ('Notification' in window && Notification.permission === 'granted') guideNotificationStatus.textContent = 'Notifications are already enabled for this browser.';
+		};
+		const setAuthMode = (mode) => {
+			const creating = mode === 'create';
+			authTitle.textContent = creating ? 'Create your account.' : 'Welcome back.';
+			authCopy.textContent = creating ? 'Create an account to keep classroom updates, dates, and notes in one place.' : 'Sign in to see classroom updates, dates, and the notes that matter to you.';
+			document.querySelector('#signInButton').hidden = creating;
+			document.querySelector('#createAccountButton').hidden = !creating;
+			document.querySelector('#forgotPasswordButton').hidden = creating;
+			signInPageLink.hidden = !creating;
+			createAccountPageLink.hidden = creating;
+		};
+		const applyAuthRoute = () => setAuthMode(window.location.hash === '#create-account' ? 'create' : 'signin');
+		signInPageLink.addEventListener('click', () => setAuthMode('signin'));
+		createAccountPageLink.addEventListener('click', () => setAuthMode('create'));
+		window.addEventListener('hashchange', applyAuthRoute);
+		applyAuthRoute();
+		continueToHomepage.addEventListener('click', () => {
+			showAppForRole(selectedRole || 'student');
+		});
+		const signOut = () => {
+			selectedRole = null;
+			currentUser = null;
+			currentProfile = null;
+			if (supabaseClient && supabaseClient.auth) supabaseClient.auth.signOut();
+			appShell.hidden = true;
+			notificationGuideScreen.hidden = true;
+			authScreen.hidden = false;
+			authStatus.textContent = 'Choose an account to continue.';
+		};
+		document.querySelector('#googleButton').addEventListener('click', async () => {
+			if (!selectedRole) { authStatus.textContent = 'Choose Student or Teacher first.'; return; }
+			const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+			if (error) authStatus.textContent = error.message;
+		});
+		document.querySelectorAll('[data-role]').forEach((roleButton) => roleButton.addEventListener('click', () => {
+			selectedRole = roleButton.dataset.role;
+			document.querySelectorAll('[data-role]').forEach((button) => button.classList.toggle('selected', button === roleButton));
+			authStatus.textContent = `${selectedRole === 'teacher' ? 'Teacher' : 'Student'} account selected. Enter your email and password to continue.`;
+		}));
+		document.querySelector('#signInButton').addEventListener('click', async () => {
+			if (!authEmail.value.trim() || !authEmail.value.includes('@')) { authStatus.textContent = 'Enter a valid email address.'; return; }
+			if (authPassword.value.length < 6) { authStatus.textContent = 'Password must be at least 6 characters.'; return; }
+			authStatus.textContent = 'Signing in...';
+			try {
+				const { data, error } = await supabaseClient.auth.signInWithPassword({ email: authEmail.value.trim(), password: authPassword.value });
+				if (error) {
+					authStatus.textContent = error.message;
+					return;
+				}
+				currentUser = data.user;
+				const profile = await loadCurrentProfile();
+				if (!profile) showProfileSetup(selectedRole || 'student');
+				else showAppForRole(profile.role);
+				authStatus.textContent = 'Signed in successfully.';
+			} catch (error) {
+				authStatus.textContent = error.message || 'Unable to reach the sign-in service.';
+			}
+		});
+		document.querySelector('#createAccountButton').addEventListener('click', async () => {
+			if (!selectedRole) { authStatus.textContent = 'Choose Student or Teacher first.'; return; }
+			if (!authEmail.value.trim() || !authEmail.value.includes('@')) { authStatus.textContent = 'Enter a valid email address.'; return; }
+			if (authPassword.value.length < 6) { authStatus.textContent = 'Password must be at least 6 characters.'; return; }
+			authStatus.textContent = 'Creating your account...';
+			const normalizedEmail = authEmail.value.trim().toLowerCase();
+			try {
+				const { data, error } = await supabaseClient.auth.signUp({ email: normalizedEmail, password: authPassword.value, options: { data: { role: selectedRole } } });
+				if (error) { authStatus.textContent = error.message; return; }
+				if (!data.session) { authStatus.textContent = 'Account created. Check your email to confirm your account, then sign in.'; return; }
+				currentUser = data.user;
+				showProfileSetup(selectedRole);
+				authStatus.textContent = 'Account created. Complete your profile to continue.';
+			} catch (error) {
+				authStatus.textContent = error.message || 'Unable to create your account.';
+			}
+		});
+		profileSetupForm.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			const name = profileNameInput.value.trim();
+			if (!name) {
+				profileStatus.textContent = 'Add your full name before continuing.';
+				return;
+			}
+			if (selectedRole === 'teacher') {
+				const schoolName = schoolNameInput.value.trim();
+				const schoolCode = schoolCodeInput.value.trim();
+				if (!schoolName || !schoolCode) {
+					profileStatus.textContent = 'Add your school name and school code so students can join.';
+					return;
+				}
+				if (!/^[A-Z0-9-]{3,10}$/i.test(schoolCode)) {
+					profileStatus.textContent = 'Use a simple school code like NHS-204.';
+					return;
+				}
+				const normalizedSchoolCode = schoolCode.trim().toUpperCase();
+				classCodes[normalizedSchoolCode] = schoolName;
+				classRosters[normalizedSchoolCode] = classRosters[normalizedSchoolCode] || [];
+				saveClasses();
+				try { await saveProfileSetup(name, schoolName, normalizedSchoolCode); } catch (error) { profileStatus.textContent = error.message; return; }
+			} else {
+				try { await saveProfileSetup(name, '', ''); } catch (error) { profileStatus.textContent = error.message; return; }
+			}
+			showAppForRole(selectedRole);
+		});
+		profileCancelButton.addEventListener('click', () => showAppForRole(selectedRole || 'student'));
+		document.querySelector('#forgotPasswordButton').addEventListener('click', async () => {
+			const email = authEmail.value.trim();
+			if (!email || !email.includes('@')) { authStatus.textContent = 'Enter your email address first so we know where to send the reset link.'; return; }
+			authStatus.textContent = 'Sending password reset email...';
+			const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+			authStatus.textContent = error ? error.message : `Password reset email sent to ${email}. Check your inbox.`;
+		});
+		document.querySelector('#editProfileButton').addEventListener('click', () => {
+			themeMenu.hidden = true;
+			profileButton.setAttribute('aria-expanded', 'false');
+			showProfileSetup(selectedRole || 'student', true);
+		});
+		document.querySelector('#notificationHelpButton').addEventListener('click', showNotificationGuide);
+		document.querySelector('#closeNotificationGuide').addEventListener('click', () => showAppForRole(selectedRole || 'student'));
+		document.querySelector('#guideEnableNotifications').addEventListener('click', async () => {
+			if (!('Notification' in window)) {
+				guideNotificationStatus.textContent = 'This browser does not support notifications.';
+				return;
+			}
+			const permission = await Notification.requestPermission();
+			guideNotificationStatus.textContent = permission === 'granted' ? 'Notifications enabled. You can close this page and return to your dashboard.' : 'Notifications are blocked. Allow them in Chrome site settings to continue.';
+		});
+		document.querySelector('#switchRoleButton').addEventListener('click', signOut);
+		joinClassButton.addEventListener('click', () => { classCodeInput.value = ''; joinStatus.textContent = ''; joinDialog.showModal(); });
+		enableNotificationsButton.addEventListener('click', async () => {
+			if (!('Notification' in window)) {
+				enableNotificationsButton.textContent = 'In-app alerts only';
+				return;
+			}
+			const permission = await Notification.requestPermission();
+			enableNotificationsButton.textContent = permission === 'granted' ? 'Alerts enabled' : 'Alerts blocked';
+		});
+		document.querySelector('#closeJoinDialog').addEventListener('click', () => joinDialog.close());
+		document.querySelector('#submitJoin').addEventListener('click', async () => {
+			const code = classCodeInput.value.trim().toUpperCase();
+			if (!code) {
+				joinStatus.textContent = 'Enter a class code first.';
+				return;
+			}
+			if (!currentUser) { joinStatus.textContent = 'Please sign in again before joining a class.'; return; }
+			const { data: joinedClass, error: joinError } = await supabaseClient.rpc('join_class_by_code', { join_code: code });
+			if (joinError) { joinStatus.textContent = joinError.message.includes('not found') ? 'That code was not found. Check with your teacher and try again.' : joinError.message; return; }
+			classCodes[code] = joinedClass.name;
+			classRecords[code] = joinedClass;
+			const joinedClasses = JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]');
+			if (!joinedClasses.includes(code)) joinedClasses.push(code);
+			localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedClasses));
+			if (!classRosters[code]) classRosters[code] = [];
+			if (!classRosters[code].includes('Maya Chen')) classRosters[code].push('Maya Chen');
+			saveClasses();
+			subscribeToClass(code);
+			joinStatus.textContent = `${classCodes[code]} added to your dashboard.`;
+			renderLiveNotifications();
+			joinDialog.close();
+		});
+		joinDialog.addEventListener('click', (event) => { if (event.target === joinDialog) joinDialog.close(); });
+		supabaseClient.auth.getSession().then(({ data }) => {
+			if (data.session) {
+				currentUser = data.session.user;
+				loadCurrentProfile().then((profile) => {
+					if (profile) showAppForRole(profile.role);
+					else showProfileSetup(selectedRole || 'student');
+				}).catch(() => { authScreen.hidden = false; authStatus.textContent = 'Could not load your profile.'; });
+			}
+			else {
+				appShell.hidden = true;
+				authSuccessScreen.hidden = true;
+				profileSetupScreen.hidden = true;
+				authScreen.hidden = false;
+				applyAuthRoute();
+			}
+		});
+
+		const calendarButton = document.querySelector('#calendarButton');
+		const calendarDialog = document.querySelector('#calendarDialog');
+		const closeDialog = document.querySelector('#closeDialog');
+		const fullDates = document.querySelector('#fullDates');
+		const miniDates = document.querySelector('#miniDates');
+		const previewMonth = document.querySelector('#previewMonth');
+		const calendarDay = document.querySelector('#calendarDay');
+		const dialogTitle = document.querySelector('#dialogTitle');
+		const selectedNote = document.querySelector('#selectedNote');
+		const pageNoteDate = document.querySelector('#pageNoteDate');
+		const pageNoteInput = document.querySelector('#pageNoteInput');
+		const savePageNote = document.querySelector('#savePageNote');
+		const enableReminderButton = document.querySelector('#enableReminderButton');
+		const pageNoteStatus = document.querySelector('#pageNoteStatus');
+		const dialogNoteInput = document.querySelector('#dialogNoteInput');
+		const saveDialogNote = document.querySelector('#saveDialogNote');
+		const dialogNoteStatus = document.querySelector('#dialogNoteStatus');
+		const themeMenu = document.querySelector('#themeMenu');
+		const liveNotifications = document.querySelector('#liveNotifications');
+		const roster = document.querySelector('#roster');
+		const rosterTitle = document.querySelector('#rosterTitle');
+		const groupSelect = document.querySelector('#groupSelect');
+		const newClassName = document.querySelector('#newClassName');
+		const newClassCode = document.querySelector('#newClassCode');
+		const createClassButton = document.querySelector('#createClassButton');
+		const createClassStatus = document.querySelector('#createClassStatus');
+		const composerStatus = document.querySelector('#composerStatus');
+		const teacherNotificationTitle = document.querySelector('#teacherNotificationTitle');
+		const teacherNotificationMessage = document.querySelector('#teacherNotificationMessage');
+		const notes = { '2026-09-03': 'Science: Lab 2 safety review is due.', '2026-09-09': 'English: Essay feedback is ready to review.', '2026-09-15': 'Today: No notes from your teachers.', '2026-09-17': 'Math: Bring your geometry project materials.', '2026-09-24': 'Field trip: Permission slips are due.' };
+		const studentNotes = JSON.parse(localStorage.getItem('in-the-know-student-notes') || '{}');
+		const sentCalendarReminders = JSON.parse(localStorage.getItem('in-the-know-sent-calendar-reminders') || '{}');
+		const savedTheme = localStorage.getItem('in-the-know-theme');
+		const availableThemes = ['pink-drink', 'gridiron', 'galaxy', 'ocean', 'candy', 'forest', 'ravens'];
+		const getLiveNotifications = () => JSON.parse(localStorage.getItem('in-the-know-live-notifications') || '[]');
+		const classChannels = {};
+		const receiveClassNotification = (notification) => {
+			const joinedClasses = JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]');
+			if (!joinedClasses.includes(notification.classCode)) return;
+			const notifications = getLiveNotifications();
+			if (!notifications.some((item) => item.id === notification.id)) {
+				notifications.push(notification);
+				localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
+			}
+			renderLiveNotifications(true);
+		};
+		const subscribeToClass = (classCode) => {
+			if (classChannels[classCode] || !supabaseClient?.channel) return;
+			classChannels[classCode] = supabaseClient.channel(`in-the-know-class-${classCode}`)
+				.on('broadcast', { event: 'notification' }, ({ payload }) => receiveClassNotification(payload))
+				.subscribe();
+		};
+		const subscribeToJoinedClasses = () => {
+			JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]').forEach(subscribeToClass);
+		};
+		const broadcastClassNotification = (notification) => {
+			let channel = classChannels[notification.classCode];
+			if (!channel) {
+				channel = supabaseClient.channel(`in-the-know-class-${notification.classCode}`);
+				classChannels[notification.classCode] = channel;
+				channel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') channel.send({ type: 'broadcast', event: 'notification', payload: notification }).catch(() => {});
+				});
+				return;
+			}
+			channel.send({ type: 'broadcast', event: 'notification', payload: notification }).catch(() => {});
+		};
+		const showBrowserNotification = (notification) => {
+			if (localStorage.getItem('in-the-know-role') !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
+			new Notification(`New message from ${notification.teacher}`, { body: `${notification.title}: ${notification.message}`, tag: `in-the-know-${notification.id}` });
+		};
+		const renderRoster = (classCode) => {
+			selectedClassCode = classCode;
+			roster.innerHTML = '';
+			const students = classRosters[classCode] || [];
+			rosterTitle.textContent = `Joined students (${students.length})`;
+			students.forEach((student) => {
+				const chip = document.createElement('span');
+				chip.className = 'student-chip';
+				chip.textContent = student;
+				roster.appendChild(chip);
+			});
+			document.querySelectorAll('[data-class-code]').forEach((button) => button.classList.toggle('active', button.dataset.classCode === classCode));
+		};
+		const renderGroups = () => {
+			groupSelect.innerHTML = '';
+			Object.entries(classCodes).forEach(([code, name]) => {
+				const button = document.createElement('button');
+				const nameText = document.createElement('span');
+				const codeText = document.createElement('span');
+				button.type = 'button';
+				button.dataset.classCode = code;
+				nameText.textContent = name;
+				codeText.textContent = `${code} · ${(classRosters[code] || []).length} students`;
+				button.append(nameText, codeText);
+				button.addEventListener('click', () => renderRoster(code));
+				groupSelect.appendChild(button);
+			});
+			renderRoster(selectedClassCode in classCodes ? selectedClassCode : Object.keys(classCodes)[0]);
+		};
+		createClassButton.addEventListener('click', async () => {
+			const name = newClassName.value.trim();
+			const code = newClassCode.value.trim().toUpperCase();
+			if (!name || !code) { createClassStatus.textContent = 'Add a class name and code first.'; return; }
+			if (!/^[A-Z0-9-]{3,8}$/.test(code)) { createClassStatus.textContent = 'Use 3–8 letters, numbers, or hyphens for the code.'; return; }
+			if (classCodes[code]) { createClassStatus.textContent = 'That class code is already in use.'; return; }
+			if (!currentUser || !currentProfile?.school_code) { createClassStatus.textContent = 'Complete your school profile before creating a class.'; return; }
+			const { data: school, error: schoolError } = await supabaseClient.from('schools').select('id').eq('code', currentProfile.school_code).maybeSingle();
+			if (schoolError || !school) { createClassStatus.textContent = schoolError?.message || 'Your school could not be found.'; return; }
+			const { data: createdClass, error: classError } = await supabaseClient.from('classes').insert({ name, code, school_id: school.id, teacher_id: currentUser.id }).select().single();
+			if (classError) { createClassStatus.textContent = classError.message; return; }
+			classCodes[code] = name;
+			classRosters[code] = [];
+			classRecords[code] = createdClass;
+			saveClasses();
+			selectedClassCode = code;
+			newClassName.value = '';
+			newClassCode.value = '';
+			createClassStatus.textContent = `${name} created. Students can join with ${code}.`;
+			renderGroups();
+		});
+		const renderLiveNotifications = (showAlert = false) => {
+			if (!liveNotifications) return;
+			const joinedClasses = JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]');
+			const messages = getLiveNotifications().filter((notification) => joinedClasses.includes(notification.classCode));
+			liveNotifications.innerHTML = '';
+			messages.slice().reverse().forEach((notification) => {
+				const card = document.createElement('article');
+				card.className = 'live-notification';
+				const title = document.createElement('strong');
+				title.textContent = `${notification.title} · ${notification.className}`;
+				const message = document.createElement('span');
+				message.textContent = `${notification.message} Sent by ${notification.teacher}.`;
+				card.append(title, message);
+				liveNotifications.appendChild(card);
+			});
+			if (showAlert && messages.length) {
+				const latest = messages[messages.length - 1];
+				showBrowserNotification(latest);
+				const alert = document.createElement('div');
+				alert.className = 'screen-alert';
+				const alertTitle = document.createElement('strong');
+				alertTitle.textContent = `New message from ${latest.teacher}`;
+				const alertMessage = document.createElement('span');
+				alertMessage.textContent = `${latest.title}: ${latest.message}`;
+				alert.append(alertTitle, alertMessage);
+				document.body.appendChild(alert);
+				setTimeout(() => alert.remove(), 7000);
+			}
+		};
+		document.querySelector('#sendTeacherNotification').addEventListener('click', async () => {
+			const title = teacherNotificationTitle.value.trim();
+			const message = teacherNotificationMessage.value.trim();
+			if (!title || !message) {
+				composerStatus.textContent = 'Add a title and message before sending.';
+				return;
+			}
+			const notification = { id: Date.now(), title, message, classCode: selectedClassCode, className: classCodes[selectedClassCode], teacher: 'Jordan' };
+			if (!currentUser || !classRecords[selectedClassCode]) {
+				composerStatus.textContent = 'Select a class created in your Supabase account before sending.';
+				return;
+			}
+			const { error: notificationError } = await supabaseClient.from('notifications').insert({ class_id: classRecords[selectedClassCode].id, teacher_id: currentUser.id, title, message });
+			if (notificationError) { composerStatus.textContent = notificationError.message; return; }
+			const notifications = getLiveNotifications();
+			notifications.push(notification);
+			localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
+			broadcastClassNotification(notification);
+			teacherNotificationTitle.value = '';
+			teacherNotificationMessage.value = '';
+			composerStatus.textContent = `Sent to ${classCodes[selectedClassCode]} students' Chromebooks.`;
+		});
+		window.addEventListener('storage', (event) => {
+			if (event.key === 'in-the-know-live-notifications' || event.key === 'in-the-know-joined-classes') renderLiveNotifications(true);
+			if (event.key === 'in-the-know-classes') {
+				const updatedClasses = JSON.parse(event.newValue || '{}');
+				Object.entries(updatedClasses).forEach(([code, classInfo]) => { classCodes[code] = classInfo.name; classRosters[code] = classInfo.students || []; });
+				renderGroups();
+			}
+		});
+		renderGroups();
+
+		if (availableThemes.includes(savedTheme)) document.documentElement.dataset.theme = savedTheme;
+
+		profileButton.addEventListener('click', () => {
+			const isOpen = profileButton.getAttribute('aria-expanded') === 'true';
+			profileButton.setAttribute('aria-expanded', String(!isOpen));
+			themeMenu.hidden = isOpen;
+		});
+		document.querySelectorAll('[data-theme-choice]').forEach((choice) => {
+			choice.addEventListener('click', () => {
+				const theme = choice.dataset.themeChoice;
+				if (theme === 'default') delete document.documentElement.dataset.theme;
+				else document.documentElement.dataset.theme = theme;
+				localStorage.setItem('in-the-know-theme', theme);
+				themeMenu.hidden = true;
+				profileButton.setAttribute('aria-expanded', 'false');
+			});
+		});
+		document.addEventListener('click', (event) => {
+			if (!event.target.closest('.student')) {
+				themeMenu.hidden = true;
+				profileButton.setAttribute('aria-expanded', 'false');
+			}
+		});
+
+		const today = new Date();
+		const year = today.getFullYear();
+		const month = today.getMonth();
+		const todayNumber = today.getDate();
+		const monthName = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(today);
+		const weekdayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
+		const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const makeKey = (day) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		let selectedDateKey = makeKey(todayNumber);
+		const updateNoteFields = (dateKey) => {
+			selectedDateKey = dateKey;
+			pageNoteDate.value = dateKey;
+			pageNoteInput.value = studentNotes[dateKey] || '';
+			dialogNoteInput.value = studentNotes[dateKey] || '';
+			const [noteYear, noteMonth, noteDay] = dateKey.split('-').map(Number);
+			const date = new Date(noteYear, noteMonth - 1, noteDay);
+			const teacherNote = notes[dateKey] ? `Teacher note: ${notes[dateKey]}` : 'No teacher note for this date.';
+			selectedNote.textContent = `${weekdayName.format(date)}, ${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date)} ${noteDay}: ${teacherNote}`;
+		};
+		const saveStudentNote = (dateKey, value, statusElement) => {
+			const trimmedValue = value.trim();
+			if (trimmedValue) studentNotes[dateKey] = trimmedValue;
+			else delete studentNotes[dateKey];
+			localStorage.setItem('in-the-know-student-notes', JSON.stringify(studentNotes));
+			updateNoteFields(dateKey);
+			statusElement.textContent = trimmedValue ? 'Saved to this date.' : 'Note cleared for this date.';
+			const dateCells = document.querySelectorAll(`[data-date-key="${dateKey}"]`);
+			dateCells.forEach((cell) => cell.classList.toggle('date-with-student-note', Boolean(trimmedValue)));
+		};
+		const checkCalendarReminders = () => {
+			if (localStorage.getItem('in-the-know-role') !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
+			const calendarItems = { ...notes, ...studentNotes };
+			const now = Date.now();
+			Object.entries(calendarItems).forEach(([dateKey, text]) => {
+				const dueAt = new Date(`${dateKey}T09:00:00`).getTime();
+				const reminderAt = dueAt - (3 * 60 * 60 * 1000);
+				if (!text || now < reminderAt || now >= dueAt || sentCalendarReminders[dateKey]) return;
+				sentCalendarReminders[dateKey] = true;
+				localStorage.setItem('in-the-know-sent-calendar-reminders', JSON.stringify(sentCalendarReminders));
+				showBrowserNotification({ id: `calendar-${dateKey}`, title: 'Calendar reminder', message: `${text} Due in about 3 hours.`, teacher: 'In The Know' });
+			});
+		};
+		pageNoteDate.addEventListener('change', () => updateNoteFields(pageNoteDate.value));
+		savePageNote.addEventListener('click', () => saveStudentNote(pageNoteDate.value, pageNoteInput.value, pageNoteStatus));
+		saveDialogNote.addEventListener('click', () => saveStudentNote(selectedDateKey, dialogNoteInput.value, dialogNoteStatus));
+		enableReminderButton.addEventListener('click', async () => {
+			if (!('Notification' in window)) {
+				pageNoteStatus.textContent = 'This browser does not support deadline notifications.';
+				return;
+			}
+			const permission = await Notification.requestPermission();
+			enableReminderButton.textContent = permission === 'granted' ? 'Deadline reminders enabled' : 'Reminders blocked';
+			pageNoteStatus.textContent = permission === 'granted' ? 'You will be notified 3 hours before calendar items are due.' : 'Allow browser notifications to receive deadline reminders.';
+			checkCalendarReminders();
+		});
+		const addDate = (container, day, muted = false) => {
+			const date = document.createElement('span');
+			date.textContent = day;
+			const dateKey = makeKey(day);
+			if (muted) date.className = 'muted';
+			else if (day === todayNumber) date.classList.add('today');
+			if (!muted) {
+				date.dataset.dateKey = dateKey;
+				date.addEventListener('click', () => updateNoteFields(dateKey));
+				if (studentNotes[dateKey]) date.classList.add('date-with-student-note');
+			}
+			if (!muted && notes[makeKey(day)]) {
+				date.classList.add('has-note');
+				const dot = document.createElement('small');
+				dot.className = 'note-dot';
+				date.appendChild(dot);
+			}
+			container.appendChild(date);
+		};
+
+		previewMonth.textContent = monthName;
+		calendarDay.textContent = todayNumber;
+		dialogTitle.textContent = monthName;
+		updateNoteFields(selectedDateKey);
+		if ('Notification' in window && Notification.permission === 'granted') {
+			enableReminderButton.textContent = 'Deadline reminders enabled';
+			checkCalendarReminders();
+		}
+		setInterval(checkCalendarReminders, 60000);
+		for (let index = 0; index < firstWeekday; index += 1) addDate(miniDates, new Date(year, month, -firstWeekday + index + 1).getDate(), true);
+		for (let day = 1; day <= daysInMonth; day += 1) addDate(miniDates, day);
+		for (let day = 1; miniDates.children.length % 7 !== 0; day += 1) addDate(miniDates, day, true);
+		for (let index = 0; index < firstWeekday; index += 1) addDate(fullDates, new Date(year, month, -firstWeekday + index + 1).getDate(), true);
+		for (let day = 1; day <= daysInMonth; day += 1) addDate(fullDates, day);
+		for (let day = 1; fullDates.children.length % 7 !== 0; day += 1) addDate(fullDates, day, true);
+
+		calendarButton.addEventListener('click', () => calendarDialog.showModal());
+		closeDialog.addEventListener('click', () => calendarDialog.close());
+		calendarDialog.addEventListener('click', (event) => { if (event.target === calendarDialog) calendarDialog.close(); });
+		renderLiveNotifications();
+	</script>
+</body>
+</html>

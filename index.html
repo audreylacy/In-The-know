@@ -356,7 +356,10 @@
 			}
 		};
 		const showAppForRole = async (role) => {
-			const isTeacher = role === 'teacher';
+			const dashboardRole = currentProfile?.role || role;
+			selectedRole = dashboardRole;
+			localStorage.setItem('in-the-know-role', dashboardRole);
+			const isTeacher = dashboardRole === 'teacher';
 			const savedProfile = currentProfile || {};
 			const displayName = savedProfile.full_name || (isTeacher ? 'Jordan' : 'Maya');
 			document.querySelector('#teacherSchoolProfileButton').textContent = savedProfile.school_code ? 'Edit school profile' : 'Set up school profile';

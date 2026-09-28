@@ -289,6 +289,7 @@
 		.teacher-hero h1 { margin: 0 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.6rem, 5vw, 4.5rem); font-weight: 400; letter-spacing: -0.055em; line-height: 0.95; }
 		.teacher-hero p { margin: 0; color: var(--muted); }
 		.teacher-action { padding: 12px 16px; border: 0; border-radius: 5px; color: #fff; background: var(--green); cursor: pointer; font-weight: 700; }
+		.teacher-school-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 		.teacher-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
 		.teacher-panel { padding: 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
 		.teacher-panel h2 { margin: 0 0 20px; font-size: 1.05rem; }

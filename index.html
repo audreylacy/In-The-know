@@ -13,15 +13,17 @@
 			<h1 id="authTitle">Welcome back.</h1>
 			<p class="auth-copy" id="authCopy">Sign in to see classroom updates, dates, and the notes that matter to you.</p>
 			<button class="google-button" id="googleButton" type="button"><span class="google-g">G</span> Continue with Google</button>
+			<button class="switch-account-button" id="switchAccountButton" type="button">Switch Google account</button>
 			<div class="auth-fields">
-				<label>Email address<input id="authEmail" type="email" placeholder="you@school.edu" autocomplete="email"></label>
+				<label id="usernameField">Username<input id="authUsername" type="text" placeholder="your username" autocomplete="username" autocapitalize="none"></label>
+				<label id="emailField">Email address<input id="authEmail" type="email" placeholder="you@school.edu" autocomplete="email"></label>
 				<label>Password<input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password"></label>
 			</div>
 			<button class="sign-in-button" id="signInButton" type="button">Sign in</button>
 			<button class="create-account-button" id="createAccountButton" type="button">Create account</button>
 			<button class="forgot-button" id="forgotPasswordButton" type="button">Forgot password?</button>
 			<nav class="auth-switch" aria-label="Account access"><a href="#signin" id="signInPageLink">Already have an account? Sign in</a><a href="#create-account" id="createAccountPageLink">New here? Create an account</a></nav>
-			<div class="role-picker">
+			<div class="role-picker" id="rolePicker">
 				<p>Choose your account</p>
 				<div class="role-options">
 					<button class="role-option" type="button" data-role="student"><strong>I'm a student</strong><span>See teacher notifications, class dates, and personal notes.</span></button>
@@ -64,8 +66,8 @@
 			<h2>Stay in the know</h2>
 			<p class="auth-profile-copy">Turn on browser alerts so important class messages and deadline reminders can appear on your Chromebook screen.</p>
 			<div class="notification-guide-grid">
-				<section class="notification-guide-section" aria-labelledby="studentNotificationsTitle"><span class="guide-number">01</span><h3 id="studentNotificationsTitle">For students</h3><ol><li>Join your class with the code from your teacher.</li><li>Click <strong>Enable alerts</strong> at the top of your dashboard.</li><li>Choose <strong>Allow</strong> when Chrome asks for permission.</li><li>Use <strong>Enable deadline reminders</strong> below your calendar for due-date alerts.</li></ol></section>
-				<section class="notification-guide-section" aria-labelledby="teacherNotificationsTitle"><span class="guide-number">02</span><h3 id="teacherNotificationsTitle">For teachers</h3><ol><li>Open your teacher workspace and select a class group.</li><li>Write a notification and click <strong>Send notification</strong>.</li><li>Students who joined that class receive the message on their Chromebooks.</li><li>Ask students to allow browser alerts so they can see messages away from the dashboard.</li></ol></section>
+				<section class="notification-guide-section" aria-labelledby="studentNotificationsTitle"><span class="guide-number">01</span><h3 id="studentNotificationsTitle">For students</h3><ol><li>Join your school with the school code from a teacher, then join your class with its class code.</li><li>Click <strong>Enable alerts</strong> at the top of your dashboard.</li><li>Choose <strong>Allow</strong> when Chrome asks for permission.</li><li>Use <strong>Enable deadline reminders</strong> below your calendar for due-date alerts.</li></ol></section>
+				<section class="notification-guide-section" aria-labelledby="teacherNotificationsTitle"><span class="guide-number">02</span><h3 id="teacherNotificationsTitle">For teachers</h3><ol><li>Join an existing school with its code or create a school in your profile.</li><li>Create or select a class group.</li><li>Choose <strong>Selected class</strong> or <strong>Entire school</strong> in the announcement form.</li><li>School announcements update dashboards while students are online; alerts with the app closed need the separate push service setup.</li></ol></section>
 			</div>
 			<div class="notification-guide-actions"><button class="sign-in-button" id="guideEnableNotifications" type="button">Enable notifications</button><p class="auth-status" id="guideNotificationStatus" role="status"></p></div>
 			<p class="guide-note"><strong>Chrome setting:</strong> If alerts were blocked, open Chrome Settings &rarr; Privacy and security &rarr; Site settings &rarr; Notifications, then allow this site.</p>
@@ -76,6 +78,7 @@
 		<div class="brand"><span class="brand-mark" aria-label="ITK logo"><span class="logo-t">T</span><span class="logo-i">I</span><span class="logo-k">K</span></span> In The Know</div>
 		<div class="student">
 			<button class="teacher-action" id="joinClassButton" type="button" hidden>+ Join class</button>
+			<button class="teacher-action" id="joinSchoolButton" type="button" hidden>+ Join school</button>
 			<button class="teacher-action" id="enableNotificationsButton" type="button" hidden>Enable alerts</button>
 			<button class="profile-button" id="profileButton" type="button" aria-expanded="false" aria-controls="themeMenu"><span>Signed in as Maya</span><span class="avatar">M</span></button>
 			<div class="theme-menu" id="themeMenu" hidden>
@@ -95,13 +98,13 @@
 		</div>
 	</header>
 
-	<section class="teacher-main" id="teacherView" hidden>
-		<div class="teacher-hero"><div><p class="eyebrow">Teacher workspace</p><h1>Good morning, Jordan.</h1><p>Keep your classes in the know.</p></div></div>
+		<section class="teacher-main" id="teacherView" hidden>
+		<div class="teacher-hero"><div><p class="eyebrow">Teacher workspace</p><h1>Good morning, Jordan.</h1><p>Keep your classes in the know.</p><div class="teacher-school-actions"><button class="teacher-action" id="teacherJoinSchoolButton" type="button">Join a school</button><button class="teacher-action" id="teacherSchoolProfileButton" type="button">Set up school profile</button></div></div></div>
 		<div class="teacher-grid">
 			<section class="teacher-panel" aria-labelledby="groupsTitle"><h2 id="groupsTitle">Your class groups</h2><div class="group-select" id="groupSelect"></div><div class="create-class"><input id="newClassName" type="text" placeholder="Class name"><input id="newClassCode" type="text" maxlength="8" placeholder="Class code"><button class="teacher-action" id="createClassButton" type="button">Create class</button><p class="create-class-status" id="createClassStatus" role="status"></p></div><h2 class="teacher-roster-title" id="rosterTitle">Joined students</h2><div class="roster" id="roster"></div></section>
 			<section class="teacher-panel" aria-labelledby="activityTitle"><h2 id="activityTitle">Recent activity</h2><div class="teacher-feed"><div class="feed-row"><strong>Science lab moved</strong><span>Sent to Biology · Period 2 · Today</span></div><div class="feed-row"><strong>Field trip reminder</strong><span>Sent to all class groups · Yesterday</span></div><div class="feed-row"><strong>Essay feedback is ready</strong><span>Sent to Advisory · Monday</span></div></div></section>
 		</div>
-		<section class="teacher-panel teacher-composer-panel" aria-labelledby="composerTitle"><h2 id="composerTitle">Send to selected class</h2><div class="composer"><input id="teacherNotificationTitle" type="text" placeholder="Notification title"><textarea id="teacherNotificationMessage" placeholder="Write a message that will appear on students' Chromebooks..."></textarea><button class="teacher-action" id="sendTeacherNotification" type="button">Send notification</button><p class="composer-status" id="composerStatus" role="status"></p></div></section>
+		<section class="teacher-panel teacher-composer-panel" aria-labelledby="composerTitle"><h2 id="composerTitle">Send an announcement</h2><div class="composer"><label for="notificationAudience">Send to</label><select id="notificationAudience"><option value="class">Selected class</option><option value="school">Entire school</option></select><input id="teacherNotificationTitle" type="text" placeholder="Notification title"><textarea id="teacherNotificationMessage" placeholder="Write an announcement for your students..."></textarea><button class="teacher-action" id="sendTeacherNotification" type="button">Send announcement</button><p class="composer-status" id="composerStatus" role="status"></p></div></section>
 	</section>
 
 	<main id="studentView">
@@ -114,11 +117,7 @@
 		<section aria-labelledby="notifications-title">
 			<div class="section-heading"><h2 id="notifications-title">Teacher notifications</h2><span class="count">3 unread updates</span></div>
 			<div class="live-notifications" id="liveNotifications"></div>
-			<div class="notifications">
-				<article class="notification urgent"><div class="notice-meta"><span class="teacher">Ms. Chen</span><span>Today, 8:42 AM</span></div><h3>Science lab moved</h3><p>We will meet in Lab 2 today. Bring your completed pre-lab worksheet.</p></article>
-				<article class="notification"><div class="notice-meta"><span class="teacher">Mr. Rivera</span><span>Today, 7:15 AM</span></div><h3>Essay feedback is ready</h3><p>Your draft comments are available in the English classroom folder.</p></article>
-				<article class="notification reminder"><div class="notice-meta"><span class="teacher">Ms. Patel</span><span>Yesterday</span></div><h3>Field trip reminder</h3><p>Permission slips are due Friday. Please check the calendar for the departure time.</p></article>
-			</div>
+			<div class="notifications" id="notifications"></div>
 		</section>
 
 		<section aria-labelledby="calendar-title">
@@ -146,6 +145,7 @@
 		<div class="full-calendar"><div class="week"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="dates" id="fullDates"></div><div class="selected-note" id="selectedNote"></div><div class="dialog-note-editor"><textarea id="dialogNoteInput" placeholder="Add your note for this date..."></textarea><button class="save-note" id="saveDialogNote" type="button">Save date note</button><p class="note-status" id="dialogNoteStatus" role="status"></p></div></div>
 	</dialog>
 	<dialog class="join-dialog" id="joinDialog" aria-labelledby="joinTitle"><h2 id="joinTitle">Join a class</h2><p>Ask your teacher for the class code, then enter it below.</p><label>Class code<input id="classCodeInput" maxlength="8" placeholder="BIO-204"></label><div class="join-actions"><button class="join-cancel" id="closeJoinDialog" type="button">Cancel</button><button class="join-submit" id="submitJoin" type="button">Join class</button></div><p class="auth-status" id="joinStatus" role="status"></p></dialog>
+	<dialog class="join-dialog" id="joinSchoolDialog" aria-labelledby="joinSchoolTitle"><h2 id="joinSchoolTitle">Join a school</h2><p>Enter the school code from a teacher at your school.</p><label>School code<input id="schoolCodeJoinInput" maxlength="10" placeholder="NHS-204"></label><div class="join-actions"><button class="join-cancel" id="closeJoinSchoolDialog" type="button">Cancel</button><button class="join-submit" id="submitJoinSchool" type="button">Join school</button></div><p class="auth-status" id="joinSchoolStatus" role="status"></p></dialog>
 
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script>
@@ -161,6 +161,7 @@
 		const authStatus = document.querySelector('#authStatus');
 		const authTitle = document.querySelector('#authTitle');
 		const authCopy = document.querySelector('#authCopy');
+		const rolePicker = document.querySelector('#rolePicker');
 		const signInPageLink = document.querySelector('#signInPageLink');
 		const createAccountPageLink = document.querySelector('#createAccountPageLink');
 		const continueToHomepage = document.querySelector('#continueToHomepage');
@@ -175,7 +176,27 @@
 		const profileSubmitButton = document.querySelector('#profileSubmitButton');
 		const profileCancelButton = document.querySelector('#profileCancelButton');
 		const authEmail = document.querySelector('#authEmail');
+		const authUsername = document.querySelector('#authUsername');
+		const emailField = document.querySelector('#emailField');
 		const authPassword = document.querySelector('#authPassword');
+		const VAPID_PUBLIC_KEY = 'YOUR_VAPID_PUBLIC_KEY_HERE';
+		const arrayBufferToBase64 = (buffer) => {
+			if (!buffer) return '';
+			let binary = '';
+			const bytes = new Uint8Array(buffer);
+			bytes.forEach((byte) => {
+				binary += String.fromCharCode(byte);
+			});
+			return window.btoa(binary);
+		};
+		const urlBase64ToUint8Array = (base64String) => {
+			const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+			const normalized = (base64String + padding)
+				.replace(/-/g, '+')
+				.replace(/_/g, '/');
+			const rawData = window.atob(normalized);
+			return Uint8Array.from(rawData, (char) => char.charCodeAt(0));
+		};
 		let selectedRole = null;
 		let profileEditing = false;
 		let currentUser = null;
@@ -189,41 +210,58 @@
 		};
 		const saveProfileSetup = async (name, schoolName, schoolCode) => {
 			if (!currentUser) throw new Error('Your session has expired. Please sign in again.');
-			const profile = { id: currentUser.id, role: selectedRole || 'student', full_name: name, school_name: schoolName || '', school_code: schoolCode || '' };
+			const accountRole = currentProfile?.role || selectedRole || currentUser.user_metadata?.role;
+			if (!['student', 'teacher'].includes(accountRole)) throw new Error('Your account role could not be determined. Please contact support before editing your profile.');
+			selectedRole = accountRole;
+			const isTeacher = accountRole === 'teacher';
+			let savedSchoolName = currentProfile?.school_name || '';
+			let savedSchoolCode = currentProfile?.school_code || '';
+			if (isTeacher) {
+				const normalizedSchoolCode = (schoolCode || '').trim().toUpperCase();
+				if (!schoolName?.trim() || !normalizedSchoolCode) throw new Error('Add your school name and school code before saving.');
+				const { data: createdSchool, error: createSchoolError } = await supabaseClient.from('schools').insert({ name: schoolName.trim(), code: normalizedSchoolCode, owner_id: currentUser.id }).select('name, code').maybeSingle();
+				if (createSchoolError?.code === '23505') {
+					const { data: joinedSchool, error: joinSchoolError } = await supabaseClient.rpc('join_school_by_code', { join_code: normalizedSchoolCode });
+					if (joinSchoolError) throw joinSchoolError;
+					savedSchoolName = joinedSchool.name;
+					savedSchoolCode = joinedSchool.code;
+				} else if (createSchoolError) throw createSchoolError;
+				else {
+					savedSchoolName = createdSchool.name;
+					savedSchoolCode = createdSchool.code;
+				}
+			}
+			const profile = { id: currentUser.id, role: accountRole, full_name: name, school_name: savedSchoolName, school_code: savedSchoolCode };
 			const { data, error } = await supabaseClient.from('profiles').upsert(profile, { onConflict: 'id' }).select().single();
 			if (error) throw error;
 			currentProfile = data;
-			if (selectedRole === 'teacher' && schoolName && schoolCode) {
-				const { error: schoolError } = await supabaseClient.from('schools').upsert({ name: schoolName, code: schoolCode, owner_id: currentUser.id }, { onConflict: 'code' });
-				if (schoolError) throw schoolError;
-			}
 		};
 		const profileButton = document.querySelector('#profileButton');
 		const profileLabel = profileButton.querySelector('span');
 		const joinClassButton = document.querySelector('#joinClassButton');
+		const joinSchoolButton = document.querySelector('#joinSchoolButton');
 		const enableNotificationsButton = document.querySelector('#enableNotificationsButton');
 		const joinDialog = document.querySelector('#joinDialog');
+		const joinSchoolDialog = document.querySelector('#joinSchoolDialog');
 		const classCodeInput = document.querySelector('#classCodeInput');
 		const joinStatus = document.querySelector('#joinStatus');
-		let classCodes = { 'BIO-204': 'Biology · Period 2', 'ADV-118': 'Advisory · Room 18', 'ENV-731': 'Environmental Science' };
-		let classRosters = { 'BIO-204': ['Maya Chen', 'Alex Johnson', 'Priya Shah', 'Noah Williams'], 'ADV-118': ['Maya Chen', 'Eli Brooks', 'Sofia Nguyen'], 'ENV-731': ['Maya Chen', 'Jordan Lee', 'Avery Smith', 'Luis Garcia'] };
+		const schoolCodeJoinInput = document.querySelector('#schoolCodeJoinInput');
+		const joinSchoolStatus = document.querySelector('#joinSchoolStatus');
+		let classCodes = {};
+		let classRosters = {};
 		const classRecords = {};
-		const savedClasses = JSON.parse(localStorage.getItem('in-the-know-classes') || '{}');
-		Object.entries(savedClasses).forEach(([code, classInfo]) => { classCodes[code] = classInfo.name; classRosters[code] = classInfo.students || []; });
-		const saveClasses = () => {
-			const classes = {};
-			Object.keys(classCodes).forEach((code) => { classes[code] = { name: classCodes[code], students: classRosters[code] || [] }; });
-			localStorage.setItem('in-the-know-classes', JSON.stringify(classes));
-		};
 		const loadBackendClasses = async () => {
 			if (!currentUser) return;
-			const { data, error } = await supabaseClient.from('classes').select('id, name, code, school_id').order('created_at');
+			const { data, error } = await supabaseClient.from('classes').select('id, name, code, school_id, teacher_id, class_members(student_id, profiles(full_name))').order('created_at');
 			if (error) throw error;
+			const joinedCodes = [];
 			data.forEach((classRecord) => {
 				classRecords[classRecord.code] = classRecord;
 				classCodes[classRecord.code] = classRecord.name;
-				classRosters[classRecord.code] = classRosters[classRecord.code] || [];
+				classRosters[classRecord.code] = (classRecord.class_members || []).map((member) => member.profiles?.full_name).filter(Boolean);
+				if (currentProfile?.role === 'student') joinedCodes.push(classRecord.code);
 			});
+			localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedCodes));
 			if (typeof renderGroups === 'function' && currentProfile?.role === 'teacher') renderGroups();
 		};
 		const loadBackendNotifications = async () => {
@@ -234,6 +272,18 @@
 			data.forEach((item) => {
 				if (!notifications.some((saved) => saved.id === item.id)) notifications.push({ id: item.id, title: item.title, message: item.message, classCode: item.classes?.code, className: item.classes?.name, teacher: 'Your teacher', createdAt: item.created_at });
 			});
+			if (currentProfile.school_code) {
+				const { data: school, error: schoolError } = await supabaseClient.from('schools').select('id, name').eq('code', currentProfile.school_code).maybeSingle();
+				if (schoolError) throw schoolError;
+				if (school) {
+					const { data: schoolMessages, error: schoolMessagesError } = await supabaseClient.from('school_notifications').select('id, title, message, created_at').eq('school_id', school.id).order('created_at', { ascending: false });
+					if (schoolMessagesError) throw schoolMessagesError;
+					schoolMessages.forEach((item) => {
+						if (!notifications.some((saved) => saved.id === item.id)) notifications.push({ id: item.id, title: item.title, message: item.message, schoolCode: currentProfile.school_code, className: school.name, teacher: 'A school teacher', createdAt: item.created_at });
+					});
+					subscribeToSchool(school.id, school.name);
+				}
+			}
 			localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
 			renderLiveNotifications();
 		};
@@ -268,10 +318,48 @@
 			schoolCodeInput.value = editing ? (savedProfile.school_code || '') : '';
 			profileStatus.textContent = '';
 		};
+		const registerPushSubscription = async () => {
+			if (!currentUser || !('Notification' in window) || Notification.permission !== 'granted') return false;
+			if (!('serviceWorker' in navigator)) {
+				console.warn('This browser does not support service workers.');
+				return false;
+			}
+			if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes('YOUR_')) {
+				console.warn('Add a real VAPID public key to enable push notifications.');
+				return false;
+			}
+			try {
+				await navigator.serviceWorker.register('./service-worker.js');
+				const registration = await navigator.serviceWorker.ready;
+				const existingSubscription = await registration.pushManager.getSubscription();
+				if (existingSubscription) {
+					await existingSubscription.unsubscribe();
+				}
+				const subscription = await registration.pushManager.subscribe({
+					userVisibleOnly: true,
+					applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+				});
+				const p256dhKey = subscription.getKey('p256dh');
+				const authKey = subscription.getKey('auth');
+				const { error } = await supabaseClient.from('push_subscriptions').upsert({
+					user_id: currentUser.id,
+					endpoint: subscription.endpoint,
+					p256dh: p256dhKey ? arrayBufferToBase64(p256dhKey) : '',
+					auth: authKey ? arrayBufferToBase64(authKey) : ''
+				}, { onConflict: 'endpoint' });
+				if (error) throw error;
+				localStorage.setItem('in-the-know-push-enabled', 'true');
+				return true;
+			} catch (error) {
+				console.warn('Push registration failed:', error);
+				return false;
+			}
+		};
 		const showAppForRole = async (role) => {
 			const isTeacher = role === 'teacher';
 			const savedProfile = currentProfile || {};
 			const displayName = savedProfile.full_name || (isTeacher ? 'Jordan' : 'Maya');
+			document.querySelector('#teacherSchoolProfileButton').textContent = savedProfile.school_code ? 'Edit school profile' : 'Set up school profile';
 			authScreen.hidden = true;
 			authSuccessScreen.hidden = true;
 			profileSetupScreen.hidden = true;
@@ -280,9 +368,13 @@
 			studentView.hidden = isTeacher;
 			teacherView.hidden = !isTeacher;
 			joinClassButton.hidden = isTeacher;
+			joinSchoolButton.hidden = isTeacher;
 			enableNotificationsButton.hidden = isTeacher;
 			if (!isTeacher && 'Notification' in window && Notification.permission === 'granted') enableNotificationsButton.textContent = 'Alerts enabled';
 			if (!isTeacher) subscribeToJoinedClasses();
+			if (!isTeacher && localStorage.getItem('in-the-know-push-enabled') === 'true') {
+				await registerPushSubscription();
+			}
 			try { await loadBackendClasses(); await loadBackendNotifications(); } catch (error) { authStatus.textContent = error.message; }
 			document.querySelector('#studentView h1').textContent = `Good morning, ${displayName}.`;
 			document.querySelector('.teacher-hero h1').textContent = `Good morning, ${displayName}.`;
@@ -304,6 +396,9 @@
 			document.querySelector('#signInButton').hidden = creating;
 			document.querySelector('#createAccountButton').hidden = !creating;
 			document.querySelector('#forgotPasswordButton').hidden = creating;
+			emailField.hidden = !creating;
+			rolePicker.hidden = !creating;
+			authUsername.placeholder = creating ? 'Choose a username' : 'Enter your username';
 			signInPageLink.hidden = !creating;
 			createAccountPageLink.hidden = creating;
 		};
@@ -315,20 +410,51 @@
 		continueToHomepage.addEventListener('click', () => {
 			showAppForRole(selectedRole || 'student');
 		});
-		const signOut = () => {
+		const clearLocalAuthState = () => {
 			selectedRole = null;
 			currentUser = null;
 			currentProfile = null;
-			if (supabaseClient && supabaseClient.auth) supabaseClient.auth.signOut();
+			localStorage.removeItem('in-the-know-role');
+			localStorage.removeItem('in-the-know-live-notifications');
+			localStorage.removeItem('in-the-know-joined-classes');
+		};
+		const signOut = async () => {
+			clearLocalAuthState();
+			if (supabaseClient && supabaseClient.auth) {
+				try { await supabaseClient.auth.signOut(); } catch (error) { console.warn('Sign out failed:', error); }
+			}
 			appShell.hidden = true;
 			notificationGuideScreen.hidden = true;
 			authScreen.hidden = false;
 			authStatus.textContent = 'Choose an account to continue.';
 		};
+		const showSwitchAccountPrompt = () => {
+			authStatus.textContent = 'This browser is still using the last Google account. Sign out of Google or use a different browser profile, then choose Student or Teacher again.';
+		};
 		document.querySelector('#googleButton').addEventListener('click', async () => {
-			if (!selectedRole) { authStatus.textContent = 'Choose Student or Teacher first.'; return; }
-			const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+			const creating = window.location.hash === '#create-account';
+			if (creating && !selectedRole) { authStatus.textContent = 'Choose Student or Teacher first.'; return; }
+			const roleForGoogle = creating ? selectedRole : null;
+			try {
+				await signOut();
+			} catch (error) {
+				console.warn('Google sign-out cleanup failed:', error);
+			}
+			selectedRole = roleForGoogle;
+			if (roleForGoogle) localStorage.setItem('in-the-know-pending-role', roleForGoogle);
+			const { error } = await supabaseClient.auth.signInWithOAuth({
+				provider: 'google',
+				options: {
+					redirectTo: window.location.href,
+					...(roleForGoogle ? { data: { role: roleForGoogle } } : {}),
+					queryParams: {
+						prompt: 'select_account',
+						access_type: 'offline'
+					}
+				}
+			});
 			if (error) authStatus.textContent = error.message;
+			else showSwitchAccountPrompt();
 		});
 		document.querySelectorAll('[data-role]').forEach((roleButton) => roleButton.addEventListener('click', () => {
 			selectedRole = roleButton.dataset.role;
@@ -336,19 +462,28 @@
 			authStatus.textContent = `${selectedRole === 'teacher' ? 'Teacher' : 'Student'} account selected. Enter your email and password to continue.`;
 		}));
 		document.querySelector('#signInButton').addEventListener('click', async () => {
-			if (!authEmail.value.trim() || !authEmail.value.includes('@')) { authStatus.textContent = 'Enter a valid email address.'; return; }
+			const username = authUsername.value.trim().toLowerCase();
+			if (!username || !/^[a-z0-9._-]{3,30}$/.test(username)) { authStatus.textContent = 'Enter the username you created, using 3–30 letters, numbers, dots, hyphens, or underscores.'; return; }
 			if (authPassword.value.length < 6) { authStatus.textContent = 'Password must be at least 6 characters.'; return; }
 			authStatus.textContent = 'Signing in...';
 			try {
-				const { data, error } = await supabaseClient.auth.signInWithPassword({ email: authEmail.value.trim(), password: authPassword.value });
+				const { data: loginEmail, error: lookupError } = await supabaseClient.rpc('resolve_login_email', { login_username: username });
+				if (lookupError) { authStatus.textContent = lookupError.message; return; }
+				if (!loginEmail) { authStatus.textContent = 'No account was found with that username.'; return; }
+				const { data, error } = await supabaseClient.auth.signInWithPassword({ email: loginEmail, password: authPassword.value });
 				if (error) {
 					authStatus.textContent = error.message;
 					return;
 				}
 				currentUser = data.user;
 				const profile = await loadCurrentProfile();
-				if (!profile) showProfileSetup(selectedRole || 'student');
-				else showAppForRole(profile.role);
+				localStorage.removeItem('in-the-know-pending-signup-role');
+				if (profile) selectedRole = profile.role;
+				if (!profile || !profile.full_name) showProfileSetup(profile?.role || data.user.user_metadata?.role || 'student');
+				else {
+					selectedRole = profile.role;
+					showAppForRole(profile.role);
+				}
 				authStatus.textContent = 'Signed in successfully.';
 			} catch (error) {
 				authStatus.textContent = error.message || 'Unable to reach the sign-in service.';
@@ -356,16 +491,22 @@
 		});
 		document.querySelector('#createAccountButton').addEventListener('click', async () => {
 			if (!selectedRole) { authStatus.textContent = 'Choose Student or Teacher first.'; return; }
+			const roleForSignup = selectedRole;
+			const username = authUsername.value.trim().toLowerCase();
+			if (!username || !/^[a-z0-9._-]{3,30}$/.test(username)) { authStatus.textContent = 'Choose a username using 3–30 letters, numbers, dots, hyphens, or underscores.'; return; }
 			if (!authEmail.value.trim() || !authEmail.value.includes('@')) { authStatus.textContent = 'Enter a valid email address.'; return; }
 			if (authPassword.value.length < 6) { authStatus.textContent = 'Password must be at least 6 characters.'; return; }
 			authStatus.textContent = 'Creating your account...';
 			const normalizedEmail = authEmail.value.trim().toLowerCase();
 			try {
-				const { data, error } = await supabaseClient.auth.signUp({ email: normalizedEmail, password: authPassword.value, options: { data: { role: selectedRole } } });
+				if (currentUser) await signOut();
+				selectedRole = roleForSignup;
+				localStorage.setItem('in-the-know-pending-signup-role', roleForSignup);
+				const { data, error } = await supabaseClient.auth.signUp({ email: normalizedEmail, password: authPassword.value, options: { data: { role: roleForSignup, username } } });
 				if (error) { authStatus.textContent = error.message; return; }
 				if (!data.session) { authStatus.textContent = 'Account created. Check your email to confirm your account, then sign in.'; return; }
 				currentUser = data.user;
-				showProfileSetup(selectedRole);
+				showProfileSetup(roleForSignup);
 				authStatus.textContent = 'Account created. Complete your profile to continue.';
 			} catch (error) {
 				authStatus.textContent = error.message || 'Unable to create your account.';
@@ -390,9 +531,6 @@
 					return;
 				}
 				const normalizedSchoolCode = schoolCode.trim().toUpperCase();
-				classCodes[normalizedSchoolCode] = schoolName;
-				classRosters[normalizedSchoolCode] = classRosters[normalizedSchoolCode] || [];
-				saveClasses();
 				try { await saveProfileSetup(name, schoolName, normalizedSchoolCode); } catch (error) { profileStatus.textContent = error.message; return; }
 			} else {
 				try { await saveProfileSetup(name, '', ''); } catch (error) { profileStatus.textContent = error.message; return; }
@@ -400,12 +538,17 @@
 			showAppForRole(selectedRole);
 		});
 		profileCancelButton.addEventListener('click', () => showAppForRole(selectedRole || 'student'));
+		document.querySelector('#teacherSchoolProfileButton').addEventListener('click', () => showProfileSetup('teacher', true));
 		document.querySelector('#forgotPasswordButton').addEventListener('click', async () => {
-			const email = authEmail.value.trim();
-			if (!email || !email.includes('@')) { authStatus.textContent = 'Enter your email address first so we know where to send the reset link.'; return; }
+			const username = authUsername.value.trim().toLowerCase();
+			if (!username) { authStatus.textContent = 'Enter your username first so we can find your account.'; return; }
+			authStatus.textContent = 'Finding your account...';
+			const { data: email, error: lookupError } = await supabaseClient.rpc('resolve_login_email', { login_username: username });
+			if (lookupError) { authStatus.textContent = lookupError.message; return; }
+			if (!email) { authStatus.textContent = 'No account was found with that username.'; return; }
 			authStatus.textContent = 'Sending password reset email...';
 			const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
-			authStatus.textContent = error ? error.message : `Password reset email sent to ${email}. Check your inbox.`;
+			authStatus.textContent = error ? error.message : 'Password reset email sent. Check the email used when you created your account.';
 		});
 		document.querySelector('#editProfileButton').addEventListener('click', () => {
 			themeMenu.hidden = true;
@@ -420,17 +563,34 @@
 				return;
 			}
 			const permission = await Notification.requestPermission();
-			guideNotificationStatus.textContent = permission === 'granted' ? 'Notifications enabled. You can close this page and return to your dashboard.' : 'Notifications are blocked. Allow them in Chrome site settings to continue.';
+			if (permission !== 'granted') {
+				guideNotificationStatus.textContent = 'Notifications are blocked. Allow them in Chrome site settings to continue.';
+				return;
+			}
+			const successful = await registerPushSubscription();
+			guideNotificationStatus.textContent = successful
+				? 'Push alerts enabled. You can close this page and still receive class updates on your Chromebook.'
+				: 'Browser permission is granted, but a real VAPID key is still required to deliver push notifications from the server.';
 		});
 		document.querySelector('#switchRoleButton').addEventListener('click', signOut);
 		joinClassButton.addEventListener('click', () => { classCodeInput.value = ''; joinStatus.textContent = ''; joinDialog.showModal(); });
+		joinSchoolButton.addEventListener('click', () => { schoolCodeJoinInput.value = ''; joinSchoolStatus.textContent = ''; joinSchoolDialog.showModal(); });
+		document.querySelector('#teacherJoinSchoolButton').addEventListener('click', () => { schoolCodeJoinInput.value = ''; joinSchoolStatus.textContent = ''; joinSchoolDialog.showModal(); });
 		enableNotificationsButton.addEventListener('click', async () => {
 			if (!('Notification' in window)) {
 				enableNotificationsButton.textContent = 'In-app alerts only';
 				return;
 			}
 			const permission = await Notification.requestPermission();
-			enableNotificationsButton.textContent = permission === 'granted' ? 'Alerts enabled' : 'Alerts blocked';
+			if (permission !== 'granted') {
+				enableNotificationsButton.textContent = 'Alerts blocked';
+				return;
+			}
+			const successful = await registerPushSubscription();
+			enableNotificationsButton.textContent = successful ? 'Alerts enabled' : 'Push not ready';
+			if (!successful) {
+				pageNoteStatus.textContent = 'Notification permission is granted, but this app still needs a server-side VAPID key to send real push notifications.';
+			}
 		});
 		document.querySelector('#closeJoinDialog').addEventListener('click', () => joinDialog.close());
 		document.querySelector('#submitJoin').addEventListener('click', async () => {
@@ -448,19 +608,36 @@
 			if (!joinedClasses.includes(code)) joinedClasses.push(code);
 			localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedClasses));
 			if (!classRosters[code]) classRosters[code] = [];
-			if (!classRosters[code].includes('Maya Chen')) classRosters[code].push('Maya Chen');
-			saveClasses();
 			subscribeToClass(code);
 			joinStatus.textContent = `${classCodes[code]} added to your dashboard.`;
 			renderLiveNotifications();
 			joinDialog.close();
 		});
 		joinDialog.addEventListener('click', (event) => { if (event.target === joinDialog) joinDialog.close(); });
+		document.querySelector('#closeJoinSchoolDialog').addEventListener('click', () => joinSchoolDialog.close());
+		document.querySelector('#submitJoinSchool').addEventListener('click', async () => {
+			const code = schoolCodeJoinInput.value.trim().toUpperCase();
+			if (!code) { joinSchoolStatus.textContent = 'Enter a school code first.'; return; }
+			if (!currentUser || !currentProfile) { joinSchoolStatus.textContent = 'Please sign in again before joining a school.'; return; }
+			const { data: school, error } = await supabaseClient.rpc('join_school_by_code', { join_code: code });
+			if (error) { joinSchoolStatus.textContent = error.message.includes('not found') ? 'That school code was not found. Check with a teacher and try again.' : error.message; return; }
+			currentProfile.school_code = school.code;
+			currentProfile.school_name = school.name;
+			joinSchoolStatus.textContent = `You joined ${school.name}.`;
+			await loadBackendNotifications();
+			joinSchoolDialog.close();
+		});
+		joinSchoolDialog.addEventListener('click', (event) => { if (event.target === joinSchoolDialog) joinSchoolDialog.close(); });
 		supabaseClient.auth.getSession().then(({ data }) => {
 			if (data.session) {
 				currentUser = data.session.user;
+				selectedRole = localStorage.getItem('in-the-know-pending-role') || selectedRole;
+				localStorage.removeItem('in-the-know-pending-role');
 				loadCurrentProfile().then((profile) => {
-					if (profile) showAppForRole(profile.role);
+					if (profile) {
+						selectedRole = profile.role;
+						showAppForRole(profile.role);
+					}
 					else showProfileSetup(selectedRole || 'student');
 				}).catch(() => { authScreen.hidden = false; authStatus.textContent = 'Could not load your profile.'; });
 			}
@@ -502,13 +679,15 @@
 		const composerStatus = document.querySelector('#composerStatus');
 		const teacherNotificationTitle = document.querySelector('#teacherNotificationTitle');
 		const teacherNotificationMessage = document.querySelector('#teacherNotificationMessage');
-		const notes = { '2026-09-03': 'Science: Lab 2 safety review is due.', '2026-09-09': 'English: Essay feedback is ready to review.', '2026-09-15': 'Today: No notes from your teachers.', '2026-09-17': 'Math: Bring your geometry project materials.', '2026-09-24': 'Field trip: Permission slips are due.' };
+		const notificationAudience = document.querySelector('#notificationAudience');
+		const notes = {};
 		const studentNotes = JSON.parse(localStorage.getItem('in-the-know-student-notes') || '{}');
 		const sentCalendarReminders = JSON.parse(localStorage.getItem('in-the-know-sent-calendar-reminders') || '{}');
 		const savedTheme = localStorage.getItem('in-the-know-theme');
 		const availableThemes = ['pink-drink', 'gridiron', 'galaxy', 'ocean', 'candy', 'forest', 'ravens'];
 		const getLiveNotifications = () => JSON.parse(localStorage.getItem('in-the-know-live-notifications') || '[]');
 		const classChannels = {};
+		const schoolChannels = {};
 		const receiveClassNotification = (notification) => {
 			const joinedClasses = JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]');
 			if (!joinedClasses.includes(notification.classCode)) return;
@@ -527,6 +706,21 @@
 		};
 		const subscribeToJoinedClasses = () => {
 			JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]').forEach(subscribeToClass);
+		};
+		const receiveSchoolNotification = (notification) => {
+			if (notification.schoolCode !== currentProfile?.school_code) return;
+			const notifications = getLiveNotifications();
+			if (!notifications.some((item) => item.id === notification.id)) {
+				notifications.push(notification);
+				localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
+			}
+			renderLiveNotifications(true);
+		};
+		const subscribeToSchool = (schoolId, schoolName) => {
+			if (schoolChannels[schoolId] || !supabaseClient?.channel) return;
+			schoolChannels[schoolId] = supabaseClient.channel(`in-the-know-school-${schoolId}`)
+				.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'school_notifications', filter: `school_id=eq.${schoolId}` }, ({ new: item }) => receiveSchoolNotification({ id: item.id, title: item.title, message: item.message, schoolCode: currentProfile?.school_code, className: schoolName, teacher: 'A school teacher', createdAt: item.created_at }))
+				.subscribe();
 		};
 		const broadcastClassNotification = (notification) => {
 			let channel = classChannels[notification.classCode];
@@ -587,7 +781,6 @@
 			classCodes[code] = name;
 			classRosters[code] = [];
 			classRecords[code] = createdClass;
-			saveClasses();
 			selectedClassCode = code;
 			newClassName.value = '';
 			newClassCode.value = '';
@@ -597,7 +790,8 @@
 		const renderLiveNotifications = (showAlert = false) => {
 			if (!liveNotifications) return;
 			const joinedClasses = JSON.parse(localStorage.getItem('in-the-know-joined-classes') || '[]');
-			const messages = getLiveNotifications().filter((notification) => joinedClasses.includes(notification.classCode));
+			const messages = getLiveNotifications().filter((notification) => notification.schoolCode === currentProfile?.school_code || joinedClasses.includes(notification.classCode));
+			document.querySelector('#notifications-title').nextElementSibling.textContent = `${messages.length} updates`;
 			liveNotifications.innerHTML = '';
 			messages.slice().reverse().forEach((notification) => {
 				const card = document.createElement('article');
@@ -630,28 +824,32 @@
 				composerStatus.textContent = 'Add a title and message before sending.';
 				return;
 			}
-			const notification = { id: Date.now(), title, message, classCode: selectedClassCode, className: classCodes[selectedClassCode], teacher: 'Jordan' };
-			if (!currentUser || !classRecords[selectedClassCode]) {
-				composerStatus.textContent = 'Select a class created in your Supabase account before sending.';
-				return;
+			if (!currentUser) { composerStatus.textContent = 'Please sign in again before sending.'; return; }
+			let notification;
+			if (notificationAudience.value === 'school') {
+				if (!currentProfile?.school_code) { composerStatus.textContent = 'Add your school name and school code in your profile before sending to the school.'; return; }
+				const { data: school, error: schoolError } = await supabaseClient.from('schools').select('id, name').eq('code', currentProfile.school_code).maybeSingle();
+				if (schoolError || !school) { composerStatus.textContent = schoolError?.message || 'Your school record could not be found.'; return; }
+				const { data: savedMessage, error: notificationError } = await supabaseClient.from('school_notifications').insert({ school_id: school.id, teacher_id: currentUser.id, title, message }).select().single();
+				if (notificationError) { composerStatus.textContent = notificationError.message; return; }
+				notification = { id: savedMessage.id, title, message, schoolCode: currentProfile.school_code, className: school.name, teacher: currentProfile.full_name || 'A school teacher', createdAt: savedMessage.created_at };
+				composerStatus.textContent = `Announcement sent to ${school.name}.`;
+			} else {
+				if (!classRecords[selectedClassCode]) { composerStatus.textContent = 'Select a class created in your Supabase account before sending.'; return; }
+				const { data: savedMessage, error: notificationError } = await supabaseClient.from('notifications').insert({ class_id: classRecords[selectedClassCode].id, teacher_id: currentUser.id, title, message }).select().single();
+				if (notificationError) { composerStatus.textContent = notificationError.message; return; }
+				notification = { id: savedMessage.id, title, message, classCode: selectedClassCode, className: classCodes[selectedClassCode], teacher: currentProfile?.full_name || 'Your teacher', createdAt: savedMessage.created_at };
+				broadcastClassNotification(notification);
+				composerStatus.textContent = `Sent to ${classCodes[selectedClassCode]} students.`;
 			}
-			const { error: notificationError } = await supabaseClient.from('notifications').insert({ class_id: classRecords[selectedClassCode].id, teacher_id: currentUser.id, title, message });
-			if (notificationError) { composerStatus.textContent = notificationError.message; return; }
 			const notifications = getLiveNotifications();
 			notifications.push(notification);
 			localStorage.setItem('in-the-know-live-notifications', JSON.stringify(notifications));
-			broadcastClassNotification(notification);
 			teacherNotificationTitle.value = '';
 			teacherNotificationMessage.value = '';
-			composerStatus.textContent = `Sent to ${classCodes[selectedClassCode]} students' Chromebooks.`;
 		});
 		window.addEventListener('storage', (event) => {
 			if (event.key === 'in-the-know-live-notifications' || event.key === 'in-the-know-joined-classes') renderLiveNotifications(true);
-			if (event.key === 'in-the-know-classes') {
-				const updatedClasses = JSON.parse(event.newValue || '{}');
-				Object.entries(updatedClasses).forEach(([code, classInfo]) => { classCodes[code] = classInfo.name; classRosters[code] = classInfo.students || []; });
-				renderGroups();
-			}
 		});
 		renderGroups();
 

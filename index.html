@@ -368,7 +368,7 @@
 			studentView.hidden = isTeacher;
 			teacherView.hidden = !isTeacher;
 			joinClassButton.hidden = isTeacher;
-			joinSchoolButton.hidden = isTeacher;
+			joinSchoolButton.hidden = false;
 			enableNotificationsButton.hidden = isTeacher;
 			if (!isTeacher && 'Notification' in window && Notification.permission === 'granted') enableNotificationsButton.textContent = 'Alerts enabled';
 			if (!isTeacher) subscribeToJoinedClasses();

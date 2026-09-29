@@ -207,21 +207,27 @@
 		};
 		const setPersistedRole = (value) => {
 			const role = normalizeRole(value);
-			selectedRole = role || selectedRole;
 			if (role) {
+				selectedRole = role;
 				localStorage.setItem('in-the-know-role', role);
 				return role;
 			}
+			selectedRole = normalizeRole(currentProfile?.role) || selectedRole;
+			if (selectedRole) {
+				localStorage.setItem('in-the-know-role', selectedRole);
+				return selectedRole;
+			}
 			localStorage.removeItem('in-the-know-role');
-			return selectedRole || 'student';
+			return 'student';
 		};
 		const getEffectiveRole = () => {
 			const profileRole = normalizeRole(currentProfile?.role);
 			if (profileRole) return profileRole;
+			const pendingRole = normalizeRole(selectedRole);
+			if (pendingRole) return pendingRole;
 			const storedRole = normalizeRole(localStorage.getItem('in-the-know-role'));
 			if (storedRole) return storedRole;
-			const pendingRole = normalizeRole(selectedRole);
-			return pendingRole || 'student';
+			return 'student';
 		};
 		const loadCurrentProfile = async () => {
 			if (!currentUser) return null;

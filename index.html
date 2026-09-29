@@ -601,13 +601,14 @@
 				currentUser = data.user;
 				const profile = await loadCurrentProfile();
 				localStorage.removeItem('in-the-know-pending-signup-role');
-				if (profile) selectedRole = profile.role;
-				if (!profile || !profile.full_name) showProfileSetup(profile?.role || data.user.user_metadata?.role || 'student');
-				else {
-					selectedRole = profile.role;
-					showAppForRole(profile.role);
+				if (!profile || !profile.full_name) {
+					showProfileSetup(profile?.role || data.user.user_metadata?.role || 'student');
+					profileStatus.textContent = 'Complete your profile to continue.';
+					return;
 				}
-				authStatus.textContent = 'Signed in successfully.';
+				selectedRole = resolveAccountRole(profile.role);
+				authStatus.textContent = 'Opening your homepage...';
+				await showAppForRole(profile.role);
 			} catch (error) {
 				authStatus.textContent = error.message || 'Unable to reach the sign-in service.';
 			}

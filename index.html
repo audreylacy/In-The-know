@@ -212,7 +212,7 @@
 				localStorage.setItem('in-the-know-role', role);
 				return role;
 			}
-			selectedRole = normalizeRole(currentProfile?.role) || selectedRole;
+			selectedRole = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || selectedRole;
 			if (selectedRole) {
 				localStorage.setItem('in-the-know-role', selectedRole);
 				return selectedRole;
@@ -223,6 +223,8 @@
 		const getEffectiveRole = () => {
 			const profileRole = normalizeRole(currentProfile?.role);
 			if (profileRole) return profileRole;
+			const userRole = normalizeRole(currentUser?.user_metadata?.role);
+			if (userRole) return userRole;
 			const pendingRole = normalizeRole(selectedRole);
 			if (pendingRole) return pendingRole;
 			const storedRole = normalizeRole(localStorage.getItem('in-the-know-role'));
@@ -394,7 +396,8 @@
 		};
 		const showAppForRole = async (role) => {
 			const profileRole = normalizeRole(currentProfile?.role);
-			const dashboardRole = profileRole || normalizeRole(role) || getEffectiveRole();
+			const userRole = normalizeRole(currentUser?.user_metadata?.role);
+			const dashboardRole = profileRole || userRole || normalizeRole(role) || getEffectiveRole();
 			selectedRole = dashboardRole;
 			setPersistedRole(dashboardRole);
 			const isTeacher = dashboardRole === 'teacher';
@@ -422,7 +425,11 @@
 			profileLabel.textContent = `Signed in as ${displayName}`;
 			profileButton.querySelector('.avatar').textContent = displayName.charAt(0).toUpperCase();
 		};
-		const showNotificationGuide = () => {
+		const showNotificationGuide = async () => {
+			if (currentUser && !currentProfile) {
+				try { await loadCurrentProfile(); } catch (error) { console.warn('Could not reload profile:', error); }
+			}
+			selectedRole = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || selectedRole || 'teacher';
 			appShell.hidden = true;
 			authScreen.hidden = true;
 			authSuccessScreen.hidden = true;
@@ -600,7 +607,15 @@
 			showProfileSetup(getEffectiveRole(), true);
 		});
 		document.querySelector('#notificationHelpButton').addEventListener('click', showNotificationGuide);
-		document.querySelector('#closeNotificationGuide').addEventListener('click', () => showAppForRole(getEffectiveRole()));
+		document.querySelector('#closeNotificationGuide').addEventListener('click', async () => {
+			if (currentUser && !currentProfile) {
+				try { await loadCurrentProfile(); } catch (error) { console.warn('Could not reload profile before returning:', error); }
+			}
+			const roleFromCurrentView = teacherView.hidden ? 'student' : 'teacher';
+			const role = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || roleFromCurrentView || 'teacher';
+			selectedRole = role;
+			showAppForRole(role);
+		});
 		document.querySelector('#guideEnableNotifications').addEventListener('click', async () => {
 			if (!('Notification' in window)) {
 				guideNotificationStatus.textContent = 'This browser does not support notifications.';

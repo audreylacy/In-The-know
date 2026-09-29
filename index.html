@@ -355,8 +355,11 @@
 				return false;
 			}
 		};
+		const getEffectiveRole = () => {
+			return currentProfile?.role || localStorage.getItem('in-the-know-role') || selectedRole || 'student';
+		};
 		const showAppForRole = async (role) => {
-			const dashboardRole = currentProfile?.role || role;
+			const dashboardRole = currentProfile?.role || localStorage.getItem('in-the-know-role') || role || selectedRole || 'student';
 			selectedRole = dashboardRole;
 			localStorage.setItem('in-the-know-role', dashboardRole);
 			const isTeacher = dashboardRole === 'teacher';
@@ -411,7 +414,7 @@
 		window.addEventListener('hashchange', applyAuthRoute);
 		applyAuthRoute();
 		continueToHomepage.addEventListener('click', () => {
-			showAppForRole(selectedRole || 'student');
+			showAppForRole(getEffectiveRole());
 		});
 		const clearLocalAuthState = () => {
 			selectedRole = null;
@@ -538,9 +541,9 @@
 			} else {
 				try { await saveProfileSetup(name, '', ''); } catch (error) { profileStatus.textContent = error.message; return; }
 			}
-			showAppForRole(selectedRole);
+			showAppForRole(getEffectiveRole());
 		});
-		profileCancelButton.addEventListener('click', () => showAppForRole(selectedRole || 'student'));
+		profileCancelButton.addEventListener('click', () => showAppForRole(getEffectiveRole()));
 		document.querySelector('#teacherSchoolProfileButton').addEventListener('click', () => showProfileSetup('teacher', true));
 		document.querySelector('#forgotPasswordButton').addEventListener('click', async () => {
 			const username = authUsername.value.trim().toLowerCase();
@@ -556,10 +559,10 @@
 		document.querySelector('#editProfileButton').addEventListener('click', () => {
 			themeMenu.hidden = true;
 			profileButton.setAttribute('aria-expanded', 'false');
-			showProfileSetup(selectedRole || 'student', true);
+			showProfileSetup(getEffectiveRole(), true);
 		});
 		document.querySelector('#notificationHelpButton').addEventListener('click', showNotificationGuide);
-		document.querySelector('#closeNotificationGuide').addEventListener('click', () => showAppForRole(selectedRole || 'student'));
+		document.querySelector('#closeNotificationGuide').addEventListener('click', () => showAppForRole(getEffectiveRole()));
 		document.querySelector('#guideEnableNotifications').addEventListener('click', async () => {
 			if (!('Notification' in window)) {
 				guideNotificationStatus.textContent = 'This browser does not support notifications.';
@@ -641,7 +644,7 @@
 						selectedRole = profile.role;
 						showAppForRole(profile.role);
 					}
-					else showProfileSetup(selectedRole || 'student');
+					else showProfileSetup(getEffectiveRole());
 				}).catch(() => { authScreen.hidden = false; authStatus.textContent = 'Could not load your profile.'; });
 			}
 			else {

@@ -192,6 +192,36 @@ $$;
 revoke all on function public.resolve_login_email(text) from public;
 grant execute on function public.resolve_login_email(text) to anon, authenticated;
 
+create or replace function public.prevent_profile_role_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  metadata_role text;
+begin
+  if tg_op = 'UPDATE' and new.role is distinct from old.role then
+    raise exception 'Account role cannot be changed';
+  end if;
+  if tg_op = 'INSERT' and auth.uid() is not null then
+    select lower(raw_user_meta_data->>'role')
+    into metadata_role
+    from auth.users
+    where id = auth.uid();
+    if metadata_role in ('student', 'teacher') and new.role <> metadata_role then
+      raise exception 'Profile role must match the account role';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_profile_role_change on public.profiles;
+create trigger prevent_profile_role_change
+before insert or update on public.profiles
+for each row execute procedure public.prevent_profile_role_change();
+
 create policy "Users can read their profile" on public.profiles for select using (id = auth.uid());
 create policy "Users can create their profile" on public.profiles for insert with check (id = auth.uid());
 create policy "Users can update their profile" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());

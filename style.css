@@ -260,6 +260,25 @@
 			display: grid;
 			gap: 16px;
 		}
+		.school-mode-picker {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+		.school-mode-button {
+			padding: 10px 12px;
+			border: 1px solid #d5dce0;
+			border-radius: 5px;
+			background: #fff;
+			color: var(--auth-ink);
+			font: inherit;
+			font-weight: 700;
+			cursor: pointer;
+		}
+		.school-mode-button.selected {
+			border-color: #247b68;
+			background: #e4f1ec;
+		}
 		.school-help {
 			margin: -4px 0 0;
 			color: var(--muted);

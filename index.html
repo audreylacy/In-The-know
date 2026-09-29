@@ -49,9 +49,13 @@
 			<form id="profileSetupForm">
 				<label class="profile-field">Full name<input id="profileNameInput" type="text" placeholder="Jordan Smith" autocomplete="name"></label>
 				<div class="teacher-profile-field" id="teacherProfileField" hidden>
-					<label class="profile-field">School name<input id="schoolNameInput" type="text" placeholder="Northside High School" autocomplete="organization"></label>
-					<label class="profile-field">School code<input id="schoolCodeInput" type="text" maxlength="10" placeholder="NHS-204"></label>
-					<p class="school-help">Students can use this code to join your classes and connect to Chromebooks from the website.</p>
+					<div class="school-mode-picker" aria-label="School setup mode">
+						<button class="school-mode-button selected" type="button" data-school-mode="create">Register my school</button>
+						<button class="school-mode-button" type="button" data-school-mode="join">Join an existing school</button>
+					</div>
+					<label class="profile-field" id="schoolNameLabel">School name<input id="schoolNameInput" type="text" placeholder="Northside High School" autocomplete="organization"></label>
+					<label class="profile-field" id="schoolCodeLabel">School code<input id="schoolCodeInput" type="text" maxlength="10" placeholder="NHS-204"></label>
+					<p class="school-help" id="schoolHelpText">Register your school to create a school admin account and give students a code to join.</p>
 				</div>
 				<div class="profile-actions"><button class="sign-in-button profile-submit" id="profileSubmitButton" type="submit">Continue</button><button class="profile-cancel" id="profileCancelButton" type="button" hidden>Cancel</button></div>
 				<p class="auth-status" id="profileStatus" role="status"></p>
@@ -169,8 +173,13 @@
 		const profileNameInput = document.querySelector('#profileNameInput');
 		const schoolNameInput = document.querySelector('#schoolNameInput');
 		const schoolCodeInput = document.querySelector('#schoolCodeInput');
+		const schoolNameLabel = document.querySelector('#schoolNameLabel');
+		const schoolCodeLabel = document.querySelector('#schoolCodeLabel');
+		const schoolHelpText = document.querySelector('#schoolHelpText');
 		const teacherProfileField = document.querySelector('#teacherProfileField');
 		const profileStatus = document.querySelector('#profileStatus');
+		let teacherSchoolMode = 'create';
+
 		const profileTitle = document.querySelector('#profileTitle');
 		const profileCopy = document.querySelector('#profileCopy');
 		const profileSubmitButton = document.querySelector('#profileSubmitButton');
@@ -205,14 +214,26 @@
 			const role = String(value || '').trim().toLowerCase();
 			return role === 'teacher' || role === 'student' ? role : null;
 		};
+		const resolveAccountRole = (preferredValue = null) => {
+			const candidateRoles = [
+				normalizeRole(currentProfile?.role),
+				normalizeRole(currentUser?.user_metadata?.role),
+				normalizeRole(preferredValue),
+				normalizeRole(selectedRole),
+				normalizeRole(localStorage.getItem('in-the-know-role')),
+				normalizeRole(localStorage.getItem('in-the-know-pending-role')),
+				normalizeRole(localStorage.getItem('in-the-know-pending-signup-role'))
+			].filter(Boolean);
+			return candidateRoles[0] || 'student';
+		};
 		const setPersistedRole = (value) => {
-			const role = normalizeRole(value);
+			const role = normalizeRole(value) || resolveAccountRole();
 			if (role) {
 				selectedRole = role;
 				localStorage.setItem('in-the-know-role', role);
 				return role;
 			}
-			selectedRole = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || selectedRole;
+			selectedRole = resolveAccountRole();
 			if (selectedRole) {
 				localStorage.setItem('in-the-know-role', selectedRole);
 				return selectedRole;
@@ -221,15 +242,7 @@
 			return 'student';
 		};
 		const getEffectiveRole = () => {
-			const profileRole = normalizeRole(currentProfile?.role);
-			if (profileRole) return profileRole;
-			const userRole = normalizeRole(currentUser?.user_metadata?.role);
-			if (userRole) return userRole;
-			const pendingRole = normalizeRole(selectedRole);
-			if (pendingRole) return pendingRole;
-			const storedRole = normalizeRole(localStorage.getItem('in-the-know-role'));
-			if (storedRole) return storedRole;
-			return 'student';
+			return resolveAccountRole();
 		};
 		const loadCurrentProfile = async () => {
 			if (!currentUser) return null;
@@ -240,23 +253,74 @@
 				const profileRole = normalizeRole(data.role);
 				if (profileRole) {
 					selectedRole = profileRole;
-					localStorage.setItem('in-the-know-role', profileRole);
+					setPersistedRole(profileRole);
+				}
+				else {
+					const fallbackRole = normalizeRole(currentUser?.user_metadata?.role) || 'student';
+					selectedRole = fallbackRole;
+					setPersistedRole(fallbackRole);
 				}
 			}
 			return data;
 		};
+		const assertAccountRole = (role) => {
+			const normalizedRole = normalizeRole(role);
+			const profileRole = normalizeRole(currentProfile?.role);
+			const metadataRole = normalizeRole(currentUser?.user_metadata?.role);
+			if (profileRole && normalizedRole !== profileRole) throw new Error('This account is permanently registered as a teacher. It cannot be used as a student account.');
+			if (metadataRole && normalizedRole !== metadataRole) throw new Error(`This account is permanently registered as a ${metadataRole}. It cannot be used as a ${normalizedRole || 'different'} account.`);
+			return normalizedRole;
+		};
+		const generateSchoolCode = () => {
+			const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+			const numbers = '23456789';
+			const makePart = (source) => source[Math.floor(Math.random() * source.length)];
+			const prefix = Array.from({ length: 3 }, () => makePart(letters)).join('');
+			const suffix = Array.from({ length: 3 }, () => makePart(numbers)).join('');
+			return `${prefix}-${suffix}`;
+		};
+		const applyTeacherSchoolMode = () => {
+			const isCreateMode = teacherSchoolMode === 'create';
+			schoolNameLabel.hidden = false;
+			schoolCodeLabel.hidden = false;
+			schoolHelpText.textContent = isCreateMode
+				? 'Register your school to become the administrator and share this school code with students.'
+				: 'Use the school code from your administrator to join an existing school.';
+			if (isCreateMode) {
+				schoolCodeInput.value = schoolCodeInput.value.trim() || generateSchoolCode();
+				schoolCodeInput.readOnly = true;
+			} else {
+				schoolCodeInput.readOnly = false;
+				schoolCodeInput.value = schoolCodeInput.value.trim();
+			}
+		};
+		document.querySelectorAll('.school-mode-button').forEach((button) => {
+			button.addEventListener('click', () => {
+				teacherSchoolMode = button.dataset.schoolMode;
+				document.querySelectorAll('.school-mode-button').forEach((item) => item.classList.toggle('selected', item === button));
+				applyTeacherSchoolMode();
+			});
+		});
 		const saveProfileSetup = async (name, schoolName, schoolCode) => {
 			if (!currentUser) throw new Error('Your session has expired. Please sign in again.');
-			const accountRole = currentProfile?.role || selectedRole || currentUser.user_metadata?.role;
+			const accountRole = assertAccountRole(resolveAccountRole());
 			if (!['student', 'teacher'].includes(accountRole)) throw new Error('Your account role could not be determined. Please contact support before editing your profile.');
 			selectedRole = accountRole;
 			const isTeacher = accountRole === 'teacher';
 			let savedSchoolName = currentProfile?.school_name || '';
 			let savedSchoolCode = currentProfile?.school_code || '';
 			if (isTeacher) {
-				const normalizedSchoolCode = (schoolCode || '').trim().toUpperCase();
-				if (!schoolName?.trim() || !normalizedSchoolCode) throw new Error('Add your school name and school code before saving.');
-				const { data: createdSchool, error: createSchoolError } = await supabaseClient.from('schools').insert({ name: schoolName.trim(), code: normalizedSchoolCode, owner_id: currentUser.id }).select('name, code').maybeSingle();
+				let normalizedSchoolCode = (schoolCode || '').trim().toUpperCase();
+				if (teacherSchoolMode === 'create' && !normalizedSchoolCode) {
+					normalizedSchoolCode = generateSchoolCode();
+				}
+				if (!schoolName?.trim() && teacherSchoolMode !== 'join') {
+					throw new Error('Add your school name before saving.');
+				}
+				if (!normalizedSchoolCode && teacherSchoolMode === 'join') {
+					throw new Error('Enter the school code you want to join.');
+				}
+				const { data: createdSchool, error: createSchoolError } = await supabaseClient.from('schools').insert({ name: schoolName.trim() || currentProfile?.school_name || 'My school', code: normalizedSchoolCode, owner_id: currentUser.id }).select('name, code').maybeSingle();
 				if (createSchoolError?.code === '23505') {
 					const { data: joinedSchool, error: joinSchoolError } = await supabaseClient.rpc('join_school_by_code', { join_code: normalizedSchoolCode });
 					if (joinSchoolError) throw joinSchoolError;
@@ -344,9 +408,13 @@
 			authSuccessScreen.hidden = true;
 			profileSetupScreen.hidden = false;
 			appShell.hidden = true;
-			selectedRole = normalizeRole(role) || getEffectiveRole();
+			const lockedRole = resolveAccountRole(role);
+			selectedRole = lockedRole;
 			profileEditing = editing;
-			teacherProfileField.hidden = selectedRole !== 'teacher';
+			teacherProfileField.hidden = lockedRole !== 'teacher';
+			if (lockedRole === 'teacher') {
+				applyTeacherSchoolMode();
+			}
 			const savedProfile = currentProfile || {};
 			profileTitle.textContent = editing ? 'Your profile' : 'Set up your profile';
 			profileCopy.textContent = editing ? 'Update your name or school details. These details personalize your dashboard and class connections.' : 'Add your name and, if you’re a teacher, connect your school so students can join from the webpage.';
@@ -355,7 +423,13 @@
 			profileNameInput.value = editing ? (savedProfile.full_name || '') : '';
 			schoolNameInput.value = editing ? (savedProfile.school_name || '') : '';
 			schoolCodeInput.value = editing ? (savedProfile.school_code || '') : '';
+			if (lockedRole === 'teacher' && teacherSchoolMode === 'create' && !schoolCodeInput.value.trim()) {
+				schoolCodeInput.value = generateSchoolCode();
+			}
 			profileStatus.textContent = '';
+			if (lockedRole === 'teacher') {
+				applyTeacherSchoolMode();
+			}
 		};
 		const registerPushSubscription = async () => {
 			if (!currentUser || !('Notification' in window) || Notification.permission !== 'granted') return false;
@@ -395,9 +469,7 @@
 			}
 		};
 		const showAppForRole = async (role) => {
-			const profileRole = normalizeRole(currentProfile?.role);
-			const userRole = normalizeRole(currentUser?.user_metadata?.role);
-			const dashboardRole = profileRole || userRole || normalizeRole(role) || getEffectiveRole();
+			const dashboardRole = assertAccountRole(resolveAccountRole(role));
 			selectedRole = dashboardRole;
 			setPersistedRole(dashboardRole);
 			const isTeacher = dashboardRole === 'teacher';
@@ -429,7 +501,7 @@
 			if (currentUser && !currentProfile) {
 				try { await loadCurrentProfile(); } catch (error) { console.warn('Could not reload profile:', error); }
 			}
-			selectedRole = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || selectedRole || 'teacher';
+			selectedRole = resolveAccountRole();
 			appShell.hidden = true;
 			authScreen.hidden = true;
 			authSuccessScreen.hidden = true;
@@ -507,7 +579,7 @@
 			else showSwitchAccountPrompt();
 		});
 		document.querySelectorAll('[data-role]').forEach((roleButton) => roleButton.addEventListener('click', () => {
-			selectedRole = normalizeRole(roleButton.dataset.role) || getEffectiveRole();
+			selectedRole = normalizeRole(roleButton.dataset.role) || resolveAccountRole();
 			setPersistedRole(selectedRole);
 			document.querySelectorAll('[data-role]').forEach((button) => button.classList.toggle('selected', button === roleButton));
 			authStatus.textContent = `${selectedRole === 'teacher' ? 'Teacher' : 'Student'} account selected. Enter your email and password to continue.`;
@@ -570,7 +642,9 @@
 				profileStatus.textContent = 'Add your full name before continuing.';
 				return;
 			}
-			if (selectedRole === 'teacher') {
+			const lockedRole = resolveAccountRole();
+			assertAccountRole(lockedRole);
+			if (lockedRole === 'teacher') {
 				const schoolName = schoolNameInput.value.trim();
 				const schoolCode = schoolCodeInput.value.trim();
 				if (!schoolName || !schoolCode) {
@@ -586,7 +660,7 @@
 			} else {
 				try { await saveProfileSetup(name, '', ''); } catch (error) { profileStatus.textContent = error.message; return; }
 			}
-			showAppForRole(getEffectiveRole());
+			showAppForRole(lockedRole);
 		});
 		profileCancelButton.addEventListener('click', () => showAppForRole(getEffectiveRole()));
 		document.querySelector('#teacherSchoolProfileButton').addEventListener('click', () => showProfileSetup('teacher', true));
@@ -612,7 +686,7 @@
 				try { await loadCurrentProfile(); } catch (error) { console.warn('Could not reload profile before returning:', error); }
 			}
 			const roleFromCurrentView = teacherView.hidden ? 'student' : 'teacher';
-			const role = normalizeRole(currentProfile?.role) || normalizeRole(currentUser?.user_metadata?.role) || roleFromCurrentView || 'teacher';
+			const role = resolveAccountRole(roleFromCurrentView);
 			selectedRole = role;
 			showAppForRole(role);
 		});
@@ -694,7 +768,7 @@
 				localStorage.removeItem('in-the-know-pending-role');
 				loadCurrentProfile().then((profile) => {
 					if (profile) {
-						selectedRole = normalizeRole(profile.role) || getEffectiveRole();
+						selectedRole = resolveAccountRole(profile.role);
 						showAppForRole(selectedRole);
 					}
 					else showProfileSetup(getEffectiveRole());

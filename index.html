@@ -201,11 +201,40 @@
 		let profileEditing = false;
 		let currentUser = null;
 		let currentProfile = null;
+		const normalizeRole = (value) => {
+			const role = String(value || '').trim().toLowerCase();
+			return role === 'teacher' || role === 'student' ? role : null;
+		};
+		const setPersistedRole = (value) => {
+			const role = normalizeRole(value);
+			selectedRole = role || selectedRole;
+			if (role) {
+				localStorage.setItem('in-the-know-role', role);
+				return role;
+			}
+			localStorage.removeItem('in-the-know-role');
+			return selectedRole || 'student';
+		};
+		const getEffectiveRole = () => {
+			const profileRole = normalizeRole(currentProfile?.role);
+			if (profileRole) return profileRole;
+			const storedRole = normalizeRole(localStorage.getItem('in-the-know-role'));
+			if (storedRole) return storedRole;
+			const pendingRole = normalizeRole(selectedRole);
+			return pendingRole || 'student';
+		};
 		const loadCurrentProfile = async () => {
 			if (!currentUser) return null;
 			const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
 			if (error) throw error;
 			currentProfile = data;
+			if (data) {
+				const profileRole = normalizeRole(data.role);
+				if (profileRole) {
+					selectedRole = profileRole;
+					localStorage.setItem('in-the-know-role', profileRole);
+				}
+			}
 			return data;
 		};
 		const saveProfileSetup = async (name, schoolName, schoolCode) => {
@@ -235,6 +264,8 @@
 			const { data, error } = await supabaseClient.from('profiles').upsert(profile, { onConflict: 'id' }).select().single();
 			if (error) throw error;
 			currentProfile = data;
+			selectedRole = accountRole;
+			setPersistedRole(accountRole);
 		};
 		const profileButton = document.querySelector('#profileButton');
 		const profileLabel = profileButton.querySelector('span');
@@ -294,10 +325,10 @@
 			profileSetupScreen.hidden = true;
 			notificationGuideScreen.hidden = true;
 			appShell.hidden = true;
-			selectedRole = role;
-			localStorage.setItem('in-the-know-role', role);
+			selectedRole = normalizeRole(role) || getEffectiveRole();
+			setPersistedRole(selectedRole);
 			setTimeout(() => {
-				showAppForRole(role);
+				showAppForRole(selectedRole);
 			}, 1800);
 		};
 		const showProfileSetup = (role, editing = false) => {
@@ -305,9 +336,9 @@
 			authSuccessScreen.hidden = true;
 			profileSetupScreen.hidden = false;
 			appShell.hidden = true;
-			selectedRole = role;
+			selectedRole = normalizeRole(role) || getEffectiveRole();
 			profileEditing = editing;
-			teacherProfileField.hidden = role !== 'teacher';
+			teacherProfileField.hidden = selectedRole !== 'teacher';
 			const savedProfile = currentProfile || {};
 			profileTitle.textContent = editing ? 'Your profile' : 'Set up your profile';
 			profileCopy.textContent = editing ? 'Update your name or school details. These details personalize your dashboard and class connections.' : 'Add your name and, if you’re a teacher, connect your school so students can join from the webpage.';
@@ -355,13 +386,11 @@
 				return false;
 			}
 		};
-		const getEffectiveRole = () => {
-			return currentProfile?.role || localStorage.getItem('in-the-know-role') || selectedRole || 'student';
-		};
 		const showAppForRole = async (role) => {
-			const dashboardRole = currentProfile?.role || localStorage.getItem('in-the-know-role') || role || selectedRole || 'student';
+			const profileRole = normalizeRole(currentProfile?.role);
+			const dashboardRole = profileRole || normalizeRole(role) || getEffectiveRole();
 			selectedRole = dashboardRole;
-			localStorage.setItem('in-the-know-role', dashboardRole);
+			setPersistedRole(dashboardRole);
 			const isTeacher = dashboardRole === 'teacher';
 			const savedProfile = currentProfile || {};
 			const displayName = savedProfile.full_name || (isTeacher ? 'Jordan' : 'Maya');
@@ -421,6 +450,8 @@
 			currentUser = null;
 			currentProfile = null;
 			localStorage.removeItem('in-the-know-role');
+			localStorage.removeItem('in-the-know-pending-role');
+			localStorage.removeItem('in-the-know-pending-signup-role');
 			localStorage.removeItem('in-the-know-live-notifications');
 			localStorage.removeItem('in-the-know-joined-classes');
 		};
@@ -463,7 +494,8 @@
 			else showSwitchAccountPrompt();
 		});
 		document.querySelectorAll('[data-role]').forEach((roleButton) => roleButton.addEventListener('click', () => {
-			selectedRole = roleButton.dataset.role;
+			selectedRole = normalizeRole(roleButton.dataset.role) || getEffectiveRole();
+			setPersistedRole(selectedRole);
 			document.querySelectorAll('[data-role]').forEach((button) => button.classList.toggle('selected', button === roleButton));
 			authStatus.textContent = `${selectedRole === 'teacher' ? 'Teacher' : 'Student'} account selected. Enter your email and password to continue.`;
 		}));
@@ -627,8 +659,8 @@
 			if (!currentUser || !currentProfile) { joinSchoolStatus.textContent = 'Please sign in again before joining a school.'; return; }
 			const { data: school, error } = await supabaseClient.rpc('join_school_by_code', { join_code: code });
 			if (error) { joinSchoolStatus.textContent = error.message.includes('not found') ? 'That school code was not found. Check with a teacher and try again.' : error.message; return; }
-			currentProfile.school_code = school.code;
-			currentProfile.school_name = school.name;
+			currentProfile = { ...currentProfile, school_code: school.code, school_name: school.name };
+			setPersistedRole(selectedRole || currentProfile.role || 'student');
 			joinSchoolStatus.textContent = `You joined ${school.name}.`;
 			await loadBackendNotifications();
 			joinSchoolDialog.close();
@@ -637,12 +669,12 @@
 		supabaseClient.auth.getSession().then(({ data }) => {
 			if (data.session) {
 				currentUser = data.session.user;
-				selectedRole = localStorage.getItem('in-the-know-pending-role') || selectedRole;
+				selectedRole = normalizeRole(localStorage.getItem('in-the-know-pending-role')) || selectedRole;
 				localStorage.removeItem('in-the-know-pending-role');
 				loadCurrentProfile().then((profile) => {
 					if (profile) {
-						selectedRole = profile.role;
-						showAppForRole(profile.role);
+						selectedRole = normalizeRole(profile.role) || getEffectiveRole();
+						showAppForRole(selectedRole);
 					}
 					else showProfileSetup(getEffectiveRole());
 				}).catch(() => { authScreen.hidden = false; authStatus.textContent = 'Could not load your profile.'; });
@@ -741,7 +773,7 @@
 			channel.send({ type: 'broadcast', event: 'notification', payload: notification }).catch(() => {});
 		};
 		const showBrowserNotification = (notification) => {
-			if (localStorage.getItem('in-the-know-role') !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
+			if (currentProfile?.role !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
 			new Notification(`New message from ${notification.teacher}`, { body: `${notification.title}: ${notification.message}`, tag: `in-the-know-${notification.id}` });
 		};
 		const renderRoster = (classCode) => {
@@ -914,7 +946,7 @@
 			dateCells.forEach((cell) => cell.classList.toggle('date-with-student-note', Boolean(trimmedValue)));
 		};
 		const checkCalendarReminders = () => {
-			if (localStorage.getItem('in-the-know-role') !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
+			if (currentProfile?.role !== 'student' || !('Notification' in window) || Notification.permission !== 'granted') return;
 			const calendarItems = { ...notes, ...studentNotes };
 			const now = Date.now();
 			Object.entries(calendarItems).forEach(([dateKey, text]) => {

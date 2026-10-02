@@ -355,17 +355,32 @@
 		const classRecords = {};
 		const loadBackendClasses = async () => {
 			if (!currentUser) return;
-			const { data, error } = await supabaseClient.from('classes').select('id, name, code, school_id, teacher_id, class_members(student_id, profiles(full_name))').order('created_at');
-			if (error) throw error;
 			const joinedCodes = [];
-			data.forEach((classRecord) => {
-				classRecords[classRecord.code] = classRecord;
-				classCodes[classRecord.code] = classRecord.name;
-				classRosters[classRecord.code] = (classRecord.class_members || []).map((member) => member.profiles?.full_name).filter(Boolean);
-				if (currentProfile?.role === 'student') joinedCodes.push(classRecord.code);
-			});
-			localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedCodes));
-			if (typeof renderGroups === 'function' && currentProfile?.role === 'teacher') renderGroups();
+			if (currentProfile?.role === 'teacher') {
+				const { data, error } = await supabaseClient.from('classes').select('id, name, code, school_id, teacher_id, class_members(student_id, profiles(full_name))').eq('teacher_id', currentUser.id).order('created_at');
+				if (error) throw error;
+				data.forEach((classRecord) => {
+					classRecords[classRecord.code] = classRecord;
+					classCodes[classRecord.code] = classRecord.name;
+					classRosters[classRecord.code] = (classRecord.class_members || []).map((member) => member.profiles?.full_name).filter(Boolean);
+				});
+				if (typeof renderGroups === 'function') renderGroups();
+			} else {
+				const { data, error } = await supabaseClient.from('class_members').select('class_id, classes(id, name, code, school_id, teacher_id, class_members(student_id, profiles(full_name)))').eq('student_id', currentUser.id).order('joined_at');
+				if (error) throw error;
+				data.forEach((membership) => {
+					const classRecord = membership.classes;
+					if (!classRecord) return;
+					classRecords[classRecord.code] = classRecord;
+					classCodes[classRecord.code] = classRecord.name;
+					classRosters[classRecord.code] = (classRecord.class_members || []).map((member) => member.profiles?.full_name).filter(Boolean);
+					joinedCodes.push(classRecord.code);
+				});
+				localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedCodes));
+			}
+			if (currentProfile?.role !== 'teacher') {
+				localStorage.setItem('in-the-know-joined-classes', JSON.stringify(joinedCodes));
+			}
 		};
 		const loadBackendNotifications = async () => {
 			if (!currentUser || currentProfile?.role !== 'student') return;
@@ -465,6 +480,7 @@
 				return true;
 			} catch (error) {
 				console.warn('Push registration failed:', error);
+				localStorage.removeItem('in-the-know-push-enabled');
 				return false;
 			}
 		};
@@ -701,10 +717,14 @@
 				guideNotificationStatus.textContent = 'Notifications are blocked. Allow them in Chrome site settings to continue.';
 				return;
 			}
+			if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes('YOUR_')) {
+				guideNotificationStatus.textContent = 'Browser permission is granted, but the server-side VAPID key is not set yet. Add the real public key before enabling real push messages.';
+				return;
+			}
 			const successful = await registerPushSubscription();
 			guideNotificationStatus.textContent = successful
 				? 'Push alerts enabled. You can close this page and still receive class updates on your Chromebook.'
-				: 'Browser permission is granted, but a real VAPID key is still required to deliver push notifications from the server.';
+				: 'Push setup is not ready yet. The real VAPID public key and server-side sender still need to be configured.';
 		});
 		document.querySelector('#switchRoleButton').addEventListener('click', signOut);
 		joinClassButton.addEventListener('click', () => { classCodeInput.value = ''; joinStatus.textContent = ''; joinDialog.showModal(); });
@@ -720,10 +740,15 @@
 				enableNotificationsButton.textContent = 'Alerts blocked';
 				return;
 			}
+			if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes('YOUR_')) {
+				enableNotificationsButton.textContent = 'Push not ready';
+				pageNoteStatus.textContent = 'Notification permission is granted, but the live VAPID public key is still missing. Add it before enabling real push alerts.';
+				return;
+			}
 			const successful = await registerPushSubscription();
 			enableNotificationsButton.textContent = successful ? 'Alerts enabled' : 'Push not ready';
 			if (!successful) {
-				pageNoteStatus.textContent = 'Notification permission is granted, but this app still needs a server-side VAPID key to send real push notifications.';
+				pageNoteStatus.textContent = 'Notification permission is granted, but the real push service is not configured yet.';
 			}
 		});
 		document.querySelector('#closeJoinDialog').addEventListener('click', () => joinDialog.close());
